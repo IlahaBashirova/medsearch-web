@@ -89,7 +89,43 @@ const options = {
             200: { description: "OK" }
           }
         }
-      }
+      },
+
+      "/api/pharmacies/search": {
+        get: {
+          summary: "Search pharmacies",
+          parameters: [
+            {
+              name: "q",
+              in: "query",
+              required: true,
+              schema: { type: "string" }
+            }
+          ],
+          responses: {
+            200: { description: "OK" }
+          }
+        }
+      },
+
+      "/api/pharmacies/{id}": {
+        get: {
+          summary: "Get pharmacy by id",
+          parameters: [
+            {
+              name: "id",
+              in: "path",
+              required: true,
+              schema: { type: "string" }
+            }
+          ],
+          responses: {
+            200: { description: "OK" },
+            404: { description: "Not found" }
+          }
+        }
+      },
+
     }
   },
   apis: []
