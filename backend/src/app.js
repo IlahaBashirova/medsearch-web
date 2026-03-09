@@ -6,6 +6,7 @@ const authRoutes = require("./routes/auth.routes");
 const pharmacyRoutes = require("./routes/pharmacy.routes");
 const swaggerUi = require("swagger-ui-express");
 const swaggerSpec = require("./swagger");
+const reservationRoutes = require("./routes/reservation.routes");
 
 
 dotenv.config();
@@ -24,6 +25,7 @@ app.get("/api/health", (req, res) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/pharmacies", pharmacyRoutes);
+app.use("/api/reservations", reservationRoutes);
 
 const PORT = process.env.PORT || 5000;
 
