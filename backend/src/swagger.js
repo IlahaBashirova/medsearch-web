@@ -128,7 +128,7 @@ const options = {
 
     }
   },
-  apis: []
+  apis: ["./src/routes/*.js"]
 };
 
 module.exports = swaggerJSDoc(options);
