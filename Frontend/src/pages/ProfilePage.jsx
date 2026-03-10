@@ -3,11 +3,27 @@ import { useNavigate } from "react-router-dom";
 import Topbar from "../components/Topbar.jsx";
 import AddReminderModal from "../components/AddReminderModal.jsx";
 import { getBellStates, getReminders, setBellStates, setReminders } from "../lib/storage.js";
+import { clearToken, getToken } from "../lib/auth.js";
+import { jwtDecode } from "../lib/jwtDecode.js";
 
 function formatTimesText(timesCount, hoursArr) {
   const timesLabel = `Gündə ${timesCount} dəfə`;
   const hoursLabel = Array.isArray(hoursArr) && hoursArr.length ? ` - ${hoursArr.join(", ")}` : "";
   return `${timesLabel}${hoursLabel}`;
+}
+
+function getCurrentUser() {
+  try {
+    const token = getToken();
+    if (!token) return { name: "İstifadəçi", email: "user@example.com" };
+    const decoded = jwtDecode(token);
+    return {
+      name: decoded?.name || "İstifadəçi",
+      email: decoded?.email || "user@example.com"
+    };
+  } catch {
+    return { name: "İstifadəçi", email: "user@example.com" };
+  }
 }
 
 export default function ProfilePage() {
@@ -16,6 +32,8 @@ export default function ProfilePage() {
   const [reminders, setRemindersState] = useState(() => getReminders());
   const [bells, setBellsState] = useState(() => getBellStates());
   const [modalOpen, setModalOpen] = useState(false);
+
+  const currentUser = useMemo(() => getCurrentUser(), []);
 
   useEffect(() => setReminders(reminders), [reminders]);
   useEffect(() => setBellStates(bells), [bells]);
@@ -37,6 +55,11 @@ export default function ProfilePage() {
     return isOn ? "is-bell-on" : "is-bell-off";
   }
 
+  function handleLogout() {
+    clearToken();
+    navigate("/auth");
+  }
+
   return (
     <main className="page page-profile">
       <Topbar
@@ -47,23 +70,45 @@ export default function ProfilePage() {
           </button>
         }
         right={
-          <button className="profile-exit" type="button" onClick={() => navigate("/auth")}>
+          <button className="profile-exit" type="button" onClick={handleLogout}>
             Çıxış
           </button>
         }
       />
 
       <section className="profile">
+        {/* User card */}
         <article className="user-card">
           <div className="user-card__avatar" aria-hidden="true">
             <i className="fa-regular fa-user"></i>
           </div>
           <div className="user-card__info">
-            <div className="user-card__name">İstifadəçi</div>
-            <div className="user-card__email">user@example.com</div>
+            <div className="user-card__name">{currentUser.name}</div>
+            <div className="user-card__email">{currentUser.email}</div>
           </div>
         </article>
 
+        {/* ── YENİ: Bron Edilmiş Dərmanlar linki ── */}
+        <article
+          className="user-card user-card--link"
+          role="button"
+          tabIndex={0}
+          onClick={() => navigate("/reservations")}
+          onKeyDown={(e) => e.key === "Enter" && navigate("/reservations")}
+          style={{ cursor: "pointer" }}
+        >
+          <div className="user-card__avatar user-card__avatar--teal" aria-hidden="true">
+            <i className="fa-solid fa-bag-shopping"></i>
+          </div>
+          <div className="user-card__info">
+            <div className="user-card__name">Bron Edilmiş Dərmanlar</div>
+            <div className="user-card__email">Rezervasiyalarınızı idarə edin</div>
+          </div>
+          <i className="fa-solid fa-arrow-right user-card__arrow"></i>
+        </article>
+        {/* ── YENİ BLOK SONU ── */}
+
+        {/* Günlük cədvəl */}
         <article className="panel">
           <header className="panel__head panel__head--teal">
             <div className="panel__head-left">
@@ -74,7 +119,7 @@ export default function ProfilePage() {
 
           <div className="panel__body panel__body--teal">
             {schedule.length === 0 ? (
-              <div className="info-box">Hələ cədvəldə dərman yoxdur. “Əlavə et” ilə əlavə edə bilərsiniz.</div>
+              <div className="info-box">Hələ cədvəldə dərman yoxdur. "Əlavə et" ilə əlavə edə bilərsiniz.</div>
             ) : (
               schedule.map((s, idx) => {
                 const key = `schedule_${idx}`;
@@ -111,6 +156,7 @@ export default function ProfilePage() {
           </div>
         </article>
 
+        {/* Xatırlatmalar */}
         <article className="panel">
           <header className="panel__head panel__head--light">
             <div className="panel__head-left">

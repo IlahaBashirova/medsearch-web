@@ -7,6 +7,7 @@ import ResultsPage from "./pages/ResultsPage.jsx";
 import PharmacyDetailPage from "./pages/PharmacyDetailPage.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
 import { RequireAuth, RequireGuest } from "./components/RouteGuards.jsx";
+import ReservationsPage from "./pages/ReservationsPage.jsx";
 
 export default function App() {
   return (
@@ -22,6 +23,15 @@ export default function App() {
             </RequireGuest>
           }
         />
+
+        <Route
+         path="/reservations"
+         element={
+            <RequireAuth>
+            <ReservationsPage />
+        </RequireAuth>
+       }
+/>
 
         <Route
           path="/home"

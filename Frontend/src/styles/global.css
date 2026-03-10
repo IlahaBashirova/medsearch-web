@@ -1398,6 +1398,108 @@ a {
   margin-top: 12px;
 }
 
+.page-reservations {
+  padding: 0 0 2rem;
+}
+
+/* Summary */
+.res-summary { margin: 1rem; padding: 1rem; }
+.res-summary__top { display: flex; align-items: center; gap: .75rem; margin-bottom: 1rem; }
+.res-summary__icon-wrap {
+  width: 48px; height: 48px; border-radius: 12px;
+  background: var(--primary); color: #fff;
+  display: flex; align-items: center; justify-content: center; font-size: 1.25rem;
+}
+.res-summary__title { font-size: 1rem; font-weight: 700; margin: 0; }
+.res-summary__sub { font-size: .8rem; color: var(--text-secondary); margin: 0; }
+
+.res-summary__stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: .5rem; }
+.res-stat {
+  background: var(--bg);
+  border-radius: 10px; padding: .75rem .5rem;
+  display: flex; flex-direction: column; align-items: center; gap: .25rem;
+}
+.res-stat__num { font-size: 1.4rem; font-weight: 700; }
+.res-stat__num--active { color: #2563eb; }
+.res-stat__num--done { color: #2563eb; }
+.res-stat__num--cancelled { color: #dc2626; }
+.res-stat__label { font-size: .75rem; color: var(--text-secondary); }
+
+/* Cards */
+.res-list { display: flex; flex-direction: column; gap: .75rem; padding: 0 1rem; }
+
+.res-card {
+  background: #fff; border-radius: 14px;
+  padding: 1rem; box-shadow: 0 1px 4px rgba(0,0,0,.07);
+}
+.res-card__header { display: flex; align-items: flex-start; gap: .75rem; margin-bottom: .75rem; }
+.res-card__icon-wrap {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: #e6f7f5; color: var(--primary);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.res-card__title-wrap { flex: 1; }
+.res-card__title { font-size: .95rem; font-weight: 700; margin: 0; }
+.res-card__qty { font-size: .8rem; color: var(--text-secondary); margin: .1rem 0 0; }
+
+.res-card__pharmacy { background: var(--bg); border-radius: 10px; padding: .6rem .75rem; margin-bottom: .75rem; }
+.res-card__pharmacy-name { font-weight: 600; font-size: .88rem; margin: 0 0 .3rem; }
+.res-card__row { display: flex; align-items: center; gap: .4rem; font-size: .82rem; color: var(--text-secondary); margin: .2rem 0; }
+.res-card__row i { color: var(--primary); }
+
+.res-card__footer { display: flex; gap: 1.5rem; margin-bottom: .5rem; }
+.res-card__meta { display: flex; align-items: center; gap: .35rem; font-size: .82rem; color: var(--text-secondary); }
+.res-card__meta i { color: var(--primary); }
+
+.res-card__bottom { display: flex; justify-content: space-between; align-items: center; padding-top: .5rem; border-top: 1px solid var(--border); }
+.res-card__total-label { font-size: .82rem; color: var(--text-secondary); }
+.res-card__total-value { font-weight: 700; font-size: 1rem; }
+
+.res-card__actions { margin-top: .6rem; }
+
+/* Badges */
+.badge { font-size: .75rem; font-weight: 600; padding: .3rem .7rem; border-radius: 20px; white-space: nowrap; }
+.badge--active { background: #dcfce7; color: #16a34a; }
+.badge--done { background: #dbeafe; color: #2563eb; }
+.badge--cancelled { background: #fee2e2; color: #dc2626; }
+
+/* Skeleton */
+.res-card--skeleton { opacity: .6; }
+.skeleton { background: #e5e7eb; border-radius: 6px; animation: pulse 1.4s ease-in-out infinite; }
+.skeleton--title { height: 18px; width: 60%; margin-bottom: .5rem; }
+.skeleton--line { height: 14px; width: 90%; margin-bottom: .4rem; }
+.skeleton--short { width: 50%; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+/* Danger outline button */
+.btn--danger-outline {
+  border: 1.5px solid #dc2626; color: #dc2626;
+  background: transparent; border-radius: 8px; padding: .4rem .9rem;
+  font-size: .82rem; font-weight: 600; cursor: pointer;
+}
+.btn--danger-outline:disabled { opacity: .5; cursor: not-allowed; }
+.btn--sm { padding: .35rem .8rem; font-size: .8rem; }
+
+/* Bron linki */
+.user-card--link {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  transition: backgroundall;
+}
+.user-card--link:hover { background: #f0faf9; }
+
+.user-card__avatar--teal {
+  background: #e6f7f5;
+  color: var(--primary);
+}
+
+.user-card__arrow {
+  margin-left: auto;
+  color: var(--text-secondary);
+  font-size: .85rem;
+}
+
 @keyframes shimmer {
   0% {
     background-position: 200% 0;
