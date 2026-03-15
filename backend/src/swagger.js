@@ -125,6 +125,146 @@ const options = {
           }
         }
       },
+      "/api/admin/auth/login": {
+        post: {
+          summary: "Admin login",
+          requestBody: {
+            required: true,
+            content: {
+              "application/json": {
+                schema: {
+                  type: "object",
+                  required: ["email", "password"],
+                  properties: {
+                    email: { type: "string" },
+                    password: { type: "string" }
+                  }
+                }
+              }
+            }
+          },
+          responses: {
+            200: { description: "OK" },
+            403: { description: "Admin access required" }
+          }
+        }
+      },
+      "/api/admin/dashboard": {
+        get: {
+          summary: "Admin dashboard overview",
+          security: [{ bearerAuth: [] }],
+          responses: {
+            200: { description: "OK" },
+            401: { description: "Unauthorized" }
+          }
+        }
+      },
+      "/api/admin/users": {
+        get: {
+          summary: "Admin users list",
+          security: [{ bearerAuth: [] }],
+          responses: {
+            200: { description: "OK" }
+          }
+        }
+      },
+      "/api/admin/pharmacies": {
+        get: {
+          summary: "Admin pharmacies list",
+          security: [{ bearerAuth: [] }],
+          responses: {
+            200: { description: "OK" }
+          }
+        },
+        post: {
+          summary: "Create pharmacy",
+          security: [{ bearerAuth: [] }],
+          responses: {
+            201: { description: "Created" }
+          }
+        }
+      },
+      "/api/admin/medicines": {
+        get: {
+          summary: "Admin medicines list",
+          security: [{ bearerAuth: [] }],
+          responses: {
+            200: { description: "OK" }
+          }
+        },
+        post: {
+          summary: "Create medicine",
+          security: [{ bearerAuth: [] }],
+          responses: {
+            201: { description: "Created" }
+          }
+        }
+      },
+      "/api/admin/reservations": {
+        get: {
+          summary: "Admin reservations list",
+          security: [{ bearerAuth: [] }],
+          responses: {
+            200: { description: "OK" }
+          }
+        }
+      },
+      "/api/admin/reminders": {
+        get: {
+          summary: "Admin reminders list",
+          security: [{ bearerAuth: [] }],
+          responses: {
+            200: { description: "OK" }
+          }
+        },
+        post: {
+          summary: "Create reminder",
+          security: [{ bearerAuth: [] }],
+          responses: {
+            201: { description: "Created" }
+          }
+        }
+      },
+      "/api/support": {
+        post: {
+          summary: "Create support conversation",
+          responses: {
+            201: { description: "Created" }
+          }
+        },
+        get: {
+          summary: "Admin support conversations list",
+          security: [{ bearerAuth: [] }],
+          responses: {
+            200: { description: "OK" }
+          }
+        }
+      },
+      "/api/admin/analytics": {
+        get: {
+          summary: "Admin analytics overview",
+          security: [{ bearerAuth: [] }],
+          responses: {
+            200: { description: "OK" }
+          }
+        }
+      },
+      "/api/admin/settings": {
+        get: {
+          summary: "Get admin settings",
+          security: [{ bearerAuth: [] }],
+          responses: {
+            200: { description: "OK" }
+          }
+        },
+        patch: {
+          summary: "Update admin settings",
+          security: [{ bearerAuth: [] }],
+          responses: {
+            200: { description: "OK" }
+          }
+        }
+      },
 
     }
   },

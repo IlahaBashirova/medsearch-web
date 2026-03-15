@@ -1,106 +1,110 @@
 const Reservation = require("../models/Reservation");
+const { normalizeStatus } = require("../services/adminReservations.service");
+const AppError = require("../utils/AppError");
+
+const formatReservationStatus = (status) => {
+  const statusMap = {
+    ACTIVE: "Aktiv",
+    COMPLETED: "Tamamlandı",
+    CANCELLED: "Ləğv edildi",
+    PENDING: "Aktiv"
+  };
+
+  return statusMap[status] || status;
+};
+
+const formatReservation = (reservation) => {
+  const item = reservation.toObject ? reservation.toObject() : reservation;
+  return {
+    ...item,
+    userId: item.userId?._id ? item.userId._id.toString() : item.userId,
+    pharmacyId: item.pharmacyId?._id ? item.pharmacyId._id.toString() : item.pharmacyId,
+    medicineId: item.medicineId?._id ? item.medicineId._id.toString() : item.medicineId,
+    status: formatReservationStatus(item.status)
+  };
+};
 
 // Yeni reservation yaratmaq
 exports.createReservation = async (req, res) => {
-  try {
-    const reservation = await Reservation.create({
-      userId: req.body.userId,
-      pharmacyName: req.body.pharmacyName,
-      medicineName: req.body.medicineName,
-      quantity: req.body.quantity,
-      price: req.body.price,
-      address: req.body.address,
-      phone: req.body.phone,
-    });
+  const userId = req.user.role === "ADMIN" && req.body.userId ? req.body.userId : req.user.id;
 
-    res.status(201).json(reservation);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+  const reservation = await Reservation.create({
+    pharmacyId: req.body.pharmacyId || null,
+    medicineId: req.body.medicineId || null,
+    userId,
+    pharmacyName: req.body.pharmacyName,
+    medicineName: req.body.medicineName,
+    quantity: req.body.quantity,
+    price: req.body.price,
+    address: req.body.address,
+    phone: req.body.phone,
+    status: normalizeStatus(req.body.status || "ACTIVE")
+  });
+
+  res.status(201).json(formatReservation(reservation));
 };
 
 // İstifadəçinin bütün reservation-larını gətirmək
 exports.getUserReservations = async (req, res) => {
-  try {
-    const reservations = await Reservation.find({
-      userId: req.params.userId,
-    });
+  const reservations = await Reservation.find({
+    userId: req.params.userId,
+  });
 
-    res.status(200).json(reservations);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+  res.status(200).json(reservations.map(formatReservation));
 };
 
 // 1) Tək bir reservation-u ID ilə gətirmək
 exports.getReservationById = async (req, res) => {
-  try {
-    const reservation = await Reservation.findById(req.params.reservationId);
+  const reservation = await Reservation.findById(req.params.reservationId);
 
-    if (!reservation) {
-      return res.status(404).json({ message: "Reservation tapılmadı" });
-    }
-
-    res.status(200).json(reservation);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+  if (!reservation) {
+    throw new AppError("Reservation not found", 404);
   }
+
+  if (req.user.role !== "ADMIN" && String(reservation.userId) !== String(req.user.id)) {
+    throw new AppError("Forbidden", 403);
+  }
+
+  res.status(200).json(formatReservation(reservation));
 };
 
 // 2) Reservation statusunu dəyişmək
 exports.updateReservationStatus = async (req, res) => {
-  try {
-    const { status } = req.body;
+  const { status } = req.body;
 
-    const allowedStatuses = ["Aktiv", "Tamamlandı", "Ləğv edildi"];
+  const updatedReservation = await Reservation.findById(req.params.reservationId);
 
-    if (!status) {
-      return res.status(400).json({ message: "Status göndərilməyib" });
-    }
-
-    if (!allowedStatuses.includes(status)) {
-      return res.status(400).json({
-        message: "Yanlış status dəyəri. Yalnız 'Aktiv', 'Tamamlandı', 'Ləğv edildi' ola bilər",
-      });
-    }
-
-    const updatedReservation = await Reservation.findByIdAndUpdate(
-      req.params.reservationId,
-      { status },
-      { new: true }
-    );
-
-    if (!updatedReservation) {
-      return res.status(404).json({ message: "Reservation tapılmadı" });
-    }
-
-    res.status(200).json({
-      message: "Reservation statusu yeniləndi",
-      reservation: updatedReservation,
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+  if (!updatedReservation) {
+    throw new AppError("Reservation not found", 404);
   }
+
+  if (req.user.role !== "ADMIN" && String(updatedReservation.userId) !== String(req.user.id)) {
+    throw new AppError("Forbidden", 403);
+  }
+
+  updatedReservation.status = normalizeStatus(status);
+  await updatedReservation.save();
+
+  res.status(200).json({
+    message: "Reservation statusu yeniləndi",
+    reservation: formatReservation(updatedReservation),
+  });
 };
 
 // 3) İstifadəçinin reservation statistikası
 exports.getUserReservationStats = async (req, res) => {
-  try {
-    const userId = req.params.userId;
+  const userId = req.params.userId;
 
-    const reservations = await Reservation.find({ userId });
+  const reservations = await Reservation.find({ userId });
 
-    const active = reservations.filter((item) => item.status === "Aktiv").length;
-    const completed = reservations.filter((item) => item.status === "Tamamlandı").length;
-    const cancelled = reservations.filter((item) => item.status === "Ləğv edildi").length;
+  const active = reservations.filter((item) => normalizeStatus(item.status) === "ACTIVE").length;
+  const completed = reservations.filter((item) => normalizeStatus(item.status) === "COMPLETED").length;
+  const cancelled = reservations.filter((item) => normalizeStatus(item.status) === "CANCELLED").length;
 
-    res.status(200).json({
-      total: reservations.length,
-      active,
-      completed,
-      cancelled,
-    });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+  res.status(200).json({
+    total: reservations.length,
+    active,
+    completed,
+    cancelled,
+  });
 };

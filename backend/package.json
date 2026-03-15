@@ -5,7 +5,10 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon src/app.js",
-    "start": "node src/app.js"
+    "start": "node src/app.js",
+    "bootstrap:admin": "node src/scripts/bootstrapAdmin.js",
+    "seed:admin-data": "node src/scripts/seedAdminData.js",
+    "test": "jest --runInBand"
   },
   "keywords": [],
   "author": "",
@@ -22,6 +25,9 @@
     "swagger-ui-express": "^5.0.1"
   },
   "devDependencies": {
-    "nodemon": "^3.1.11"
+    "jest": "^30.3.0",
+    "mongodb-memory-server": "^10.4.3",
+    "nodemon": "^3.1.11",
+    "supertest": "^7.2.2"
   }
 }
