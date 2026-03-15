@@ -2,6 +2,16 @@ const express = require("express");
 const router = express.Router();
 
 const reservationController = require("../controllers/reservation.controller");
+const auth = require("../middleware/auth");
+const asyncHandler = require("../middleware/asyncHandler");
+const requireSelfOrAdmin = require("../middleware/requireSelfOrAdmin");
+const validate = require("../middleware/validate");
+const {
+  validateAuthenticatedReservationCreate,
+  validateReservationStatus,
+  validateReservationUserParam,
+  validateReservationIdParam
+} = require("../validation/reservation.validation");
 
 /**
  * @swagger
@@ -51,7 +61,12 @@ const reservationController = require("../controllers/reservation.controller");
  *       500:
  *         description: Server error
  */
-router.post("/create", reservationController.createReservation);
+router.post(
+  "/create",
+  auth,
+  validate(validateAuthenticatedReservationCreate),
+  asyncHandler(reservationController.createReservation)
+);
 
 /**
  * @swagger
@@ -73,7 +88,13 @@ router.post("/create", reservationController.createReservation);
  *       500:
  *         description: Server error
  */
-router.get("/user/:userId", reservationController.getUserReservations);
+router.get(
+  "/user/:userId",
+  auth,
+  validate(validateReservationUserParam),
+  requireSelfOrAdmin((req) => req.params.userId),
+  asyncHandler(reservationController.getUserReservations)
+);
 
 /**
  * @swagger
@@ -97,7 +118,12 @@ router.get("/user/:userId", reservationController.getUserReservations);
  *       500:
  *         description: Server error
  */
-router.get("/:reservationId", reservationController.getReservationById);
+router.get(
+  "/:reservationId",
+  auth,
+  validate(validateReservationIdParam),
+  asyncHandler(reservationController.getReservationById)
+);
 
 /**
  * @swagger
@@ -136,7 +162,12 @@ router.get("/:reservationId", reservationController.getReservationById);
  *       500:
  *         description: Server error
  */
-router.patch("/:reservationId/status", reservationController.updateReservationStatus);
+router.patch(
+  "/:reservationId/status",
+  auth,
+  validate(validateReservationStatus),
+  asyncHandler(reservationController.updateReservationStatus)
+);
 
 /**
  * @swagger
@@ -158,6 +189,12 @@ router.patch("/:reservationId/status", reservationController.updateReservationSt
  *       500:
  *         description: Server error
  */
-router.get("/user/:userId/stats", reservationController.getUserReservationStats);
+router.get(
+  "/user/:userId/stats",
+  auth,
+  validate(validateReservationUserParam),
+  requireSelfOrAdmin((req) => req.params.userId),
+  asyncHandler(reservationController.getUserReservationStats)
+);
 
 module.exports = router;

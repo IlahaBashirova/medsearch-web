@@ -3,8 +3,19 @@ const mongoose = require("mongoose");
 const reservationSchema = new mongoose.Schema(
   {
     userId: {
-      type: String,
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
       required: true,
+    },
+    pharmacyId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Pharmacy",
+      default: null,
+    },
+    medicineId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Medicine",
+      default: null,
     },
     pharmacyName: {
       type: String,
@@ -32,8 +43,8 @@ const reservationSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["Aktiv", "Tamamlandı", "Ləğv edildi"],
-      default: "Aktiv",
+      enum: ["ACTIVE", "COMPLETED", "CANCELLED", "PENDING", "Aktiv", "Tamamlandı", "Ləğv edildi"],
+      default: "ACTIVE",
     },
   },
   {

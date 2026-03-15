@@ -1,8 +1,9 @@
 const router = require("express").Router();
 const pharmacyController = require("../controllers/pharmacy.controller");
+const asyncHandler = require("../middleware/asyncHandler");
 
-router.get("/", pharmacyController.getAll);
-router.get("/search", pharmacyController.search);
-router.get("/:id", pharmacyController.getById);
+router.get("/", asyncHandler(pharmacyController.getAll));
+router.get("/search", asyncHandler(pharmacyController.search));
+router.get("/:id", asyncHandler(pharmacyController.getById));
 
 module.exports = router;
