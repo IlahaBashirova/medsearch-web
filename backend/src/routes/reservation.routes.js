@@ -19,6 +19,8 @@ const {
  *   post:
  *     summary: Create reservation
  *     tags: [Reservations]
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -26,7 +28,6 @@ const {
  *           schema:
  *             type: object
  *             required:
- *               - userId
  *               - medicineName
  *               - pharmacyName
  *               - quantity
@@ -36,7 +37,14 @@ const {
  *             properties:
  *               userId:
  *                 type: string
+ *                 description: Optional for regular users; derived from the Bearer token unless an admin sends it explicitly.
  *                 example: "699c31334f90e52785c9757b"
+ *               pharmacyId:
+ *                 type: string
+ *                 example: "690eeeed6bffef0bb767f901"
+ *               medicineId:
+ *                 type: string
+ *                 example: "690eeeed6bffef0bb767f902"
  *               medicineName:
  *                 type: string
  *                 example: "Paracetamol"
@@ -58,6 +66,8 @@ const {
  *     responses:
  *       201:
  *         description: Reservation created successfully
+ *       401:
+ *         description: Unauthorized
  *       500:
  *         description: Server error
  */
@@ -74,6 +84,8 @@ router.post(
  *   get:
  *     summary: Get user reservations
  *     tags: [Reservations]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: userId
@@ -85,6 +97,8 @@ router.post(
  *     responses:
  *       200:
  *         description: User reservations fetched successfully
+ *       401:
+ *         description: Unauthorized
  *       500:
  *         description: Server error
  */
@@ -102,6 +116,8 @@ router.get(
  *   get:
  *     summary: Get reservation by ID
  *     tags: [Reservations]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: reservationId
@@ -113,6 +129,8 @@ router.get(
  *     responses:
  *       200:
  *         description: Reservation fetched successfully
+ *       401:
+ *         description: Unauthorized
  *       404:
  *         description: Reservation not found
  *       500:
@@ -131,6 +149,8 @@ router.get(
  *   patch:
  *     summary: Update reservation status
  *     tags: [Reservations]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: reservationId
@@ -157,6 +177,8 @@ router.get(
  *         description: Reservation status updated successfully
  *       400:
  *         description: Invalid status value
+ *       401:
+ *         description: Unauthorized
  *       404:
  *         description: Reservation not found
  *       500:
@@ -175,6 +197,8 @@ router.patch(
  *   get:
  *     summary: Get user reservation stats
  *     tags: [Reservations]
+ *     security:
+ *       - bearerAuth: []
  *     parameters:
  *       - in: path
  *         name: userId
@@ -186,6 +210,8 @@ router.patch(
  *     responses:
  *       200:
  *         description: Reservation stats fetched successfully
+ *       401:
+ *         description: Unauthorized
  *       500:
  *         description: Server error
  */
