@@ -1,5 +1,5 @@
 import React, { useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { loginApi, registerApi } from "../lib/authApi.js";
 import { setToken } from "../lib/auth.js";
 
@@ -245,6 +245,12 @@ export default function AuthPage() {
             >
               Qonaq kimi davam et
             </a>
+          </p>
+
+          <p className="hint">
+            <Link className="link link--primary" to="/admin/login">
+              Admin giriş
+            </Link>
           </p>
         </div>
       </section>
