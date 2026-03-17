@@ -1,6 +1,6 @@
 import React from "react";
 
-export default function PharmacyCard({ pharmacy, reserved, onDetails, onReserve }) {
+export default function PharmacyCard({ pharmacy, reserved, reserving, onDetails, onReserve }) {
   const hasPrice = Number.isFinite(pharmacy.price);
   const hasDistance = Boolean(pharmacy.distanceText);
 
@@ -24,10 +24,19 @@ export default function PharmacyCard({ pharmacy, reserved, onDetails, onReserve 
           Detallara bax
         </button>
 
-        <button className="btn btn--outline ph-card__btn" type="button" onClick={onReserve} disabled={reserved}>
+        <button
+          className="btn btn--outline ph-card__btn"
+          type="button"
+          onClick={onReserve}
+          disabled={reserved || reserving}
+        >
           {reserved ? (
             <>
               <i className="fa-regular fa-circle-check"></i> Bron edildi
+            </>
+          ) : reserving ? (
+            <>
+              <i className="fa-solid fa-spinner fa-spin"></i> Rezervasiya...
             </>
           ) : (
             <>

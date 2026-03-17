@@ -3,6 +3,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import Topbar from "../components/Topbar.jsx";
 import PharmacyCard from "../components/PharmacyCard.jsx";
 import { searchPharmacies } from "../lib/api.js";
+import { createReservation } from "../lib/reservationApi.js";
 
 function CardSkeleton() {
   return (
@@ -25,13 +26,16 @@ export default function ResultsPage() {
   const [items, setItems] = useState([]);
   const [sortAsc, setSortAsc] = useState(true);
   const [reservedIds, setReservedIds] = useState(() => new Set());
+  const [reservingId, setReservingId] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [reserveError, setReserveError] = useState("");
 
   useEffect(() => {
     let mounted = true;
     setLoading(true);
     setError("");
+    setReserveError("");
 
     searchPharmacies(q)
       .then((data) => {
@@ -52,6 +56,30 @@ export default function ResultsPage() {
       mounted = false;
     };
   }, [q]);
+
+  async function handleReserve(pharmacy) {
+    if (reservedIds.has(pharmacy.id) || reservingId) return;
+
+    setReserveError("");
+    setReservingId(pharmacy.id);
+
+    try {
+      await createReservation({
+        pharmacyName: pharmacy.name,
+        medicineName: q,
+        quantity: 1,
+        price: Number(pharmacy.price) || 0,
+        address: pharmacy.address || "",
+        phone: pharmacy.phone || ""
+      });
+
+      setReservedIds((prev) => new Set(prev).add(pharmacy.id));
+    } catch (e) {
+      setReserveError(e?.message || "Rezervasiya yaratmaq mümkün olmadı");
+    } finally {
+      setReservingId("");
+    }
+  }
 
   const sorted = useMemo(() => {
     const arr = [...items];
@@ -92,6 +120,7 @@ export default function ResultsPage() {
         </div>
 
         {error ? <div className="info-box">{error}</div> : null}
+        {!error && reserveError ? <div className="info-box">{reserveError}</div> : null}
 
         <div className="results__grid">
           {loading
@@ -101,8 +130,9 @@ export default function ResultsPage() {
                   key={p.id}
                   pharmacy={p}
                   reserved={reservedIds.has(p.id)}
+                  reserving={reservingId === p.id}
                   onDetails={() => navigate(`/pharmacy/${p.id}`)}
-                  onReserve={() => setReservedIds((prev) => new Set(prev).add(p.id))}
+                  onReserve={() => handleReserve(p)}
                 />
               ))}
         </div>
