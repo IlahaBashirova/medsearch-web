@@ -150,71 +150,73 @@ export default function ReservationsPage() {
 
   return (
     <main className="page page-reservations">
-      <header className="page-header">
-        <button className="btn-back" onClick={() => navigate(-1)} aria-label="Geri">
-          <i className="fa-solid fa-arrow-left"></i>
-        </button>
-        <h1 className="page-header__title">Bron Edilmiş Dərmanlar</h1>
-      </header>
+      <div className="page-reservations__container">
+        <header className="page-header">
+          <button className="btn-back" onClick={() => navigate(-1)} aria-label="Geri">
+            <i className="fa-solid fa-arrow-left"></i>
+          </button>
+          <h1 className="page-header__title">Bron Edilmiş Dərmanlar</h1>
+        </header>
 
-      {/* Summary card */}
-      <section className="res-summary card">
-        <div className="res-summary__top">
-          <div className="res-summary__icon-wrap">
-            <i className="fa-solid fa-bag-shopping"></i>
+        {/* Summary card */}
+        <section className="res-summary card" style={{ width: "100%" }}>
+          <div className="res-summary__top">
+            <div className="res-summary__icon-wrap">
+              <i className="fa-solid fa-bag-shopping"></i>
+            </div>
+            <div>
+              <h2 className="res-summary__title">Rezervasiyalarınız</h2>
+              <p className="res-summary__sub">Bütün bron edilmiş dərmanlar</p>
+            </div>
           </div>
-          <div>
-            <h2 className="res-summary__title">Rezervasiyalarınız</h2>
-            <p className="res-summary__sub">Bütün bron edilmiş dərmanlar</p>
-          </div>
-        </div>
 
-        <div className="res-summary__stats">
-          <div className="res-stat">
-            <span className="res-stat__num res-stat__num--active">{stats.aktiv}</span>
-            <span className="res-stat__label">Aktiv</span>
+          <div className="res-summary__stats">
+            <div className="res-stat">
+              <span className="res-stat__num res-stat__num--active">{stats.aktiv}</span>
+              <span className="res-stat__label">Aktiv</span>
+            </div>
+            <div className="res-stat">
+              <span className="res-stat__num res-stat__num--done">{stats.tamamlandi}</span>
+              <span className="res-stat__label">Tamamlandı</span>
+            </div>
+            <div className="res-stat">
+              <span className="res-stat__num res-stat__num--cancelled">{stats.legvEdildi}</span>
+              <span className="res-stat__label">Ləğv edildi</span>
+            </div>
           </div>
-          <div className="res-stat">
-            <span className="res-stat__num res-stat__num--done">{stats.tamamlandi}</span>
-            <span className="res-stat__label">Tamamlandı</span>
-          </div>
-          <div className="res-stat">
-            <span className="res-stat__num res-stat__num--cancelled">{stats.legvEdildi}</span>
-            <span className="res-stat__label">Ləğv edildi</span>
-          </div>
-        </div>
-      </section>
+        </section>
 
-      {/* List */}
-      <section className="res-list">
-        {loading ? (
-          <>
-            {[1, 2, 3].map((n) => (
-              <div key={n} className="res-card res-card--skeleton">
-                <div className="skeleton skeleton--title" />
-                <div className="skeleton skeleton--line" />
-                <div className="skeleton skeleton--line skeleton--short" />
-              </div>
-            ))}
-          </>
-        ) : error ? (
-          <div className="info-box">{error}</div>
-        ) : reservations.length === 0 ? (
-          <div className="empty-state">
-            <i className="fa-solid fa-bag-shopping empty-state__icon"></i>
-            <p>Hələ heç bir rezervasiya yoxdur</p>
-          </div>
-        ) : (
-          reservations.map((item) => (
-            <ReservationCard
-              key={item._id}
-              item={item}
-              onCancel={handleCancel}
-              cancelling={cancelling}
-            />
-          ))
-        )}
-      </section>
+        {/* List */}
+        <section className="res-list">
+          {loading ? (
+            <>
+              {[1, 2, 3].map((n) => (
+                <div key={n} className="res-card res-card--skeleton">
+                  <div className="skeleton skeleton--title" />
+                  <div className="skeleton skeleton--line" />
+                  <div className="skeleton skeleton--line skeleton--short" />
+                </div>
+              ))}
+            </>
+          ) : error ? (
+            <div className="info-box">{error}</div>
+          ) : reservations.length === 0 ? (
+            <div className="empty-state">
+              <i className="fa-solid fa-bag-shopping empty-state__icon"></i>
+              <p>Hələ heç bir rezervasiya yoxdur</p>
+            </div>
+          ) : (
+            reservations.map((item) => (
+              <ReservationCard
+                key={item._id}
+                item={item}
+                onCancel={handleCancel}
+                cancelling={cancelling}
+              />
+            ))
+          )}
+        </section>
+      </div>
     </main>
   );
 }
