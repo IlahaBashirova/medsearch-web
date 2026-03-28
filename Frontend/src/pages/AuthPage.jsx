@@ -1,7 +1,7 @@
 import React, { useRef, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { loginApi, registerApi } from "../lib/authApi.js";
-import { setToken } from "../lib/auth.js";
+import { setToken, startGuestSession } from "../lib/auth.js";
 
 function mapAuthErrorMessage(msg) {
   const m = String(msg || "");
@@ -40,7 +40,7 @@ export default function AuthPage() {
       if (!result?.token) return setError("Token alınmadı (backend cavabını yoxlayın).");
 
       setToken(result.token);
-      navigate("/home");
+      navigate(result?.user?.role === "ADMIN" ? "/admin/dashboard" : "/home");
     } catch (err) {
       if (err?.name === "AbortError") return;
       setError(mapAuthErrorMessage(err?.message));
@@ -238,19 +238,14 @@ export default function AuthPage() {
               href="#"
               onClick={(ev) => {
                 ev.preventDefault();
-                // Qonaq kimi davam istəsən, auth guard-ları bunu bloklayacaq.
-                // Ona görə bunu ya sil, ya da "demo token" qoy:
-                setError("Qonaq rejimi deaktivdir. Zəhmət olmasa giriş edin.");
+                if (loading) return;
+                setError("");
+                startGuestSession();
+                navigate("/home");
               }}
             >
               Qonaq kimi davam et
             </a>
-          </p>
-
-          <p className="hint">
-            <Link className="link link--primary" to="/admin/login">
-              Admin giriş
-            </Link>
           </p>
         </div>
       </section>
