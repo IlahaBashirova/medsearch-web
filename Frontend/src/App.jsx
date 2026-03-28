@@ -6,10 +6,9 @@ import HomePage from "./pages/HomePage.jsx";
 import ResultsPage from "./pages/ResultsPage.jsx";
 import PharmacyDetailPage from "./pages/PharmacyDetailPage.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
-import { RequireAuth, RequireGuest } from "./components/RouteGuards.jsx";
+import { RequireAppAccess, RequireAuth, RequireGuest } from "./components/RouteGuards.jsx";
 import ReservationsPage from "./pages/ReservationsPage.jsx";
-import { RequireAdmin, RequireAdminGuest } from "./admin/components/AdminRouteGuards.jsx";
-import AdminLoginPage from "./admin/pages/AdminLoginPage.jsx";
+import { RequireAdmin } from "./admin/components/AdminRouteGuards.jsx";
 import AdminDashboardPage from "./admin/pages/AdminDashboardPage.jsx";
 import AdminUsersPage from "./admin/pages/AdminUsersPage.jsx";
 import AdminPharmaciesPage from "./admin/pages/AdminPharmaciesPage.jsx";
@@ -28,14 +27,7 @@ export default function App() {
         <Route path="/" element={<Navigate to="/auth" replace />} />
         <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
 
-        <Route
-          path="/admin/login"
-          element={
-            <RequireAdminGuest>
-              <AdminLoginPage />
-            </RequireAdminGuest>
-          }
-        />
+        <Route path="/admin/login" element={<Navigate to="/auth" replace />} />
 
         <Route
           path="/admin/dashboard"
@@ -148,25 +140,25 @@ export default function App() {
         <Route
           path="/home"
           element={
-            <RequireAuth>
+            <RequireAppAccess>
               <HomePage />
-            </RequireAuth>
+            </RequireAppAccess>
           }
         />
         <Route
           path="/results"
           element={
-            <RequireAuth>
+            <RequireAppAccess>
               <ResultsPage />
-            </RequireAuth>
+            </RequireAppAccess>
           }
         />
         <Route
           path="/pharmacy/:id"
           element={
-            <RequireAuth>
+            <RequireAppAccess>
               <PharmacyDetailPage />
-            </RequireAuth>
+            </RequireAppAccess>
           }
         />
         <Route

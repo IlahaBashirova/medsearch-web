@@ -4,6 +4,7 @@ import Topbar from "../components/Topbar.jsx";
 import PharmacyCard from "../components/PharmacyCard.jsx";
 import { searchPharmacies } from "../lib/api.js";
 import { createReservation } from "../lib/reservationApi.js";
+import { getSessionUser } from "../lib/auth.js";
 
 function CardSkeleton() {
   return (
@@ -59,6 +60,11 @@ export default function ResultsPage() {
 
   async function handleReserve(pharmacy) {
     if (reservedIds.has(pharmacy.id) || reservingId) return;
+
+    if (getSessionUser().isGuest) {
+      setReserveError("Rezervasiya üçün giriş edin.");
+      return;
+    }
 
     setReserveError("");
     setReservingId(pharmacy.id);
