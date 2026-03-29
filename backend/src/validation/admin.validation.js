@@ -138,6 +138,12 @@ exports.validateSupportCreate = ({ body }) => {
 
   if (isBlank(body.subject)) errors.push("Subject is required");
   if (isBlank(body.message)) errors.push("Message is required");
+  if (body.pharmacyRef !== undefined && typeof body.pharmacyRef !== "string") {
+    errors.push("Invalid pharmacyRef");
+  }
+  if (body.pharmacyName !== undefined && typeof body.pharmacyName !== "string") {
+    errors.push("Invalid pharmacyName");
+  }
   if (body.priority !== undefined && !oneOf(body.priority, chatPriorities)) {
     errors.push("Invalid priority");
   }

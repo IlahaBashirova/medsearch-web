@@ -5,12 +5,23 @@ exports.list = async (req, res) => {
   res.status(200).json(result);
 };
 
+exports.getMine = async (req, res) => {
+  const result = await supportService.getMine({
+    userId: req.user.id,
+    pharmacyRef: req.query.pharmacyRef,
+    pharmacyName: req.query.pharmacyName
+  });
+  res.status(200).json(result);
+};
+
 exports.create = async (req, res) => {
   const result = await supportService.create({
     userId: req.user.id,
     subject: req.body.subject,
     message: req.body.message,
-    priority: req.body.priority
+    priority: req.body.priority,
+    pharmacyRef: req.body.pharmacyRef,
+    pharmacyName: req.body.pharmacyName
   });
   res.status(201).json(result);
 };

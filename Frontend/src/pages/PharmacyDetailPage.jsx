@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import Topbar from "../components/Topbar.jsx";
 import ChatWidget from "../components/ChatWidget.jsx";
 import { getPharmacyById } from "../lib/api.js";
@@ -8,6 +8,7 @@ import { cleanPhoneToTel } from "../lib/maps.js";
 export default function PharmacyDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [pharmacy, setPharmacy] = useState(null);
   const [chatOpen, setChatOpen] = useState(false);
@@ -34,6 +35,11 @@ export default function PharmacyDetailPage() {
     if (!pharmacy) return "Koordinatlar: —";
     return `Koordinatlar: ${Number(pharmacy.lat).toFixed(4)}, ${Number(pharmacy.lng).toFixed(4)}`;
   }, [pharmacy]);
+
+  useEffect(() => {
+    if (searchParams.get("chat") !== "1") return;
+    setChatOpen(true);
+  }, [searchParams]);
 
   return (
     <main className="page page-detail">
@@ -131,7 +137,7 @@ export default function PharmacyDetailPage() {
           </div>
         </article>
 
-        <ChatWidget open={chatOpen} onClose={() => setChatOpen(false)} />
+        <ChatWidget open={chatOpen} onClose={() => setChatOpen(false)} pharmacy={pharmacy} />
 
         <article className="map-card">
           <div className="map-card__head">Xəritədə yeri</div>

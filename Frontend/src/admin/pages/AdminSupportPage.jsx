@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import AdminLayout from "../layout/AdminLayout.jsx";
 import {
   getAdminSupportConversations,
@@ -20,6 +21,10 @@ function formatMessageTime(value) {
 
 export default function AdminSupportPage() {
   const abortRef = useRef(null);
+  const isFetchingRef = useRef(false);
+  const conversationsSignatureRef = useRef("");
+  const [searchParams] = useSearchParams();
+  const pendingConversationIdRef = useRef(searchParams.get("conversationId") || "");
   const [status, setStatus] = useState("");
   const [conversations, setConversations] = useState([]);
   const [selectedId, setSelectedId] = useState("");
@@ -29,31 +34,61 @@ export default function AdminSupportPage() {
   const [replyLoading, setReplyLoading] = useState(false);
   const [statusLoading, setStatusLoading] = useState(false);
 
-  const loadConversations = useCallback(async () => {
-    abortRef.current?.abort();
+  const loadConversations = useCallback(async ({ silent = false } = {}) => {
+    if (isFetchingRef.current) return;
+
     const ac = new AbortController();
     abortRef.current = ac;
+    isFetchingRef.current = true;
 
-    setLoading(true);
-    setError("");
+    if (!silent) {
+      setLoading(true);
+    }
 
     try {
       const res = await getAdminSupportConversations({ status, limit: 30 }, ac.signal);
       const data = Array.isArray(res?.data) ? res.data : [];
+      const nextSignature = JSON.stringify(
+        data.map((item) => [item._id, item.status, item.lastMessageAt || "", item.messages?.length || 0])
+      );
 
-      setConversations(data);
-      setSelectedId((current) => current || data[0]?._id || "");
+      if (nextSignature !== conversationsSignatureRef.current) {
+        conversationsSignatureRef.current = nextSignature;
+        setConversations(data);
+      }
+      setSelectedId((current) => {
+        const requestedConversationId = pendingConversationIdRef.current;
+
+        if (requestedConversationId && data.some((item) => item._id === requestedConversationId)) {
+          pendingConversationIdRef.current = "";
+          return requestedConversationId;
+        }
+
+        return current || data[0]?._id || "";
+      });
+      setError("");
     } catch (err) {
       if (err?.name === "AbortError") return;
       setError(err?.message || "Mesajları yükləmək mümkün olmadı");
     } finally {
-      setLoading(false);
+      isFetchingRef.current = false;
+      if (!silent) {
+        setLoading(false);
+      }
     }
   }, [status]);
 
   useEffect(() => {
     loadConversations();
-    return () => abortRef.current?.abort();
+    const intervalId = window.setInterval(() => {
+      loadConversations({ silent: true });
+    }, 5000);
+
+    return () => {
+      window.clearInterval(intervalId);
+      abortRef.current?.abort();
+      isFetchingRef.current = false;
+    };
   }, [loadConversations]);
 
   const selectedConversation = useMemo(

@@ -826,6 +826,10 @@
   gap: 18px;
 }
 
+.admin-card-grid--single {
+  grid-template-columns: 1fr;
+}
+
 .admin-table--medicines .admin-table__head,
 .admin-table--medicines .admin-table__row {
   grid-template-columns: 1.5fr 1fr 1.2fr 0.8fr 0.7fr 0.8fr 0.8fr;
@@ -904,6 +908,11 @@
   border-radius: 20px;
   box-shadow: var(--admin-shadow);
   padding: 20px;
+}
+
+.admin-reminder-card--unread {
+  border-color: rgba(14, 165, 150, 0.4);
+  background: #f9fffe;
 }
 
 .admin-reminder-card__top {
