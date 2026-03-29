@@ -25,6 +25,8 @@ const supportConversationSchema = new mongoose.Schema(
       ref: "User",
       required: true
     },
+    pharmacyRef: { type: String, default: "", trim: true },
+    pharmacyName: { type: String, default: "", trim: true },
     subject: { type: String, required: true, trim: true },
     status: {
       type: String,

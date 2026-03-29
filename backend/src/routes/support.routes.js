@@ -11,6 +11,7 @@ const {
 } = require("../validation/admin.validation");
 
 router.post("/", auth, validate(validateSupportCreate), asyncHandler(supportController.create));
+router.get("/my", auth, asyncHandler(supportController.getMine));
 
 router.use(auth, authorize("ADMIN"));
 

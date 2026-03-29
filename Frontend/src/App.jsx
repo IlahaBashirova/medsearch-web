@@ -5,6 +5,7 @@ import AuthPage from "./pages/AuthPage.jsx";
 import HomePage from "./pages/HomePage.jsx";
 import ResultsPage from "./pages/ResultsPage.jsx";
 import PharmacyDetailPage from "./pages/PharmacyDetailPage.jsx";
+import NotificationsPage from "./pages/NotificationsPage.jsx";
 import ProfilePage from "./pages/ProfilePage.jsx";
 import { RequireAppAccess, RequireAuth, RequireGuest } from "./components/RouteGuards.jsx";
 import ReservationsPage from "./pages/ReservationsPage.jsx";
@@ -19,6 +20,7 @@ import AdminRemindersPage from "./admin/pages/AdminRemindersPage.jsx";
 import AdminSupportPage from "./admin/pages/AdminSupportPage.jsx";
 import AdminAnalyticsPage from "./admin/pages/AdminAnalyticsPage.jsx";
 import AdminSettingsPage from "./admin/pages/AdminSettingsPage.jsx";
+import AdminNotificationsPage from "./admin/pages/AdminNotificationsPage.jsx";
 
 export default function App() {
   return (
@@ -102,6 +104,15 @@ export default function App() {
         />
 
         <Route
+          path="/admin/notifications"
+          element={
+            <RequireAdmin>
+              <AdminNotificationsPage />
+            </RequireAdmin>
+          }
+        />
+
+        <Route
           path="/admin/analytics"
           element={
             <RequireAdmin>
@@ -166,6 +177,14 @@ export default function App() {
           element={
             <RequireAuth>
               <ProfilePage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/notifications"
+          element={
+            <RequireAuth>
+              <NotificationsPage />
             </RequireAuth>
           }
         />

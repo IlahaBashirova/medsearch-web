@@ -5,6 +5,7 @@ import AddReminderModal from "../components/AddReminderModal.jsx";
 import { getBellStates, getReminders, setBellStates, setReminders } from "../lib/storage.js";
 import { clearToken, getToken } from "../lib/auth.js";
 import { jwtDecode } from "../lib/jwtDecode.js";
+import { getMyNotifications } from "../lib/notificationsApi.js";
 
 function formatTimesText(timesCount, hoursArr) {
   const timesLabel = `Gündə ${timesCount} dəfə`;
@@ -32,11 +33,34 @@ export default function ProfilePage() {
   const [reminders, setRemindersState] = useState(() => getReminders());
   const [bells, setBellsState] = useState(() => getBellStates());
   const [modalOpen, setModalOpen] = useState(false);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
 
   const currentUser = useMemo(() => getCurrentUser(), []);
 
   useEffect(() => setReminders(reminders), [reminders]);
   useEffect(() => setBellStates(bells), [bells]);
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadNotifications() {
+      try {
+        const result = await getMyNotifications({ limit: 1, unreadOnly: "true" });
+        if (!mounted) return;
+        setUnreadNotifications(result?.unreadCount || 0);
+      } catch {
+        if (!mounted) return;
+        setUnreadNotifications(0);
+      }
+    }
+
+    loadNotifications();
+    const intervalId = window.setInterval(loadNotifications, 10000);
+
+    return () => {
+      mounted = false;
+      window.clearInterval(intervalId);
+    };
+  }, []);
 
   const schedule = useMemo(() => {
     const rows = [];
@@ -107,6 +131,26 @@ export default function ProfilePage() {
           <i className="fa-solid fa-arrow-right user-card__arrow"></i>
         </article>
         {/* ── YENİ BLOK SONU ── */}
+
+        <article
+          className="user-card user-card--link"
+          role="button"
+          tabIndex={0}
+          onClick={() => navigate("/notifications")}
+          onKeyDown={(e) => e.key === "Enter" && navigate("/notifications")}
+          style={{ cursor: "pointer" }}
+        >
+          <div className="user-card__avatar user-card__avatar--teal" aria-hidden="true">
+            <i className="fa-regular fa-bell"></i>
+          </div>
+          <div className="user-card__info">
+            <div className="user-card__name">Bildirişlər</div>
+            <div className="user-card__email">
+              {unreadNotifications > 0 ? `${unreadNotifications} yeni bildiriş var` : "Bütün bildirişlər oxunub"}
+            </div>
+          </div>
+          <i className="fa-solid fa-arrow-right user-card__arrow"></i>
+        </article>
 
         {/* Günlük cədvəl */}
         <article className="panel">
