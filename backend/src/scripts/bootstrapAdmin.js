@@ -2,6 +2,7 @@ const dotenv = require("dotenv");
 const bcrypt = require("bcryptjs");
 const mongoose = require("mongoose");
 const connectDB = require("../config/db");
+const { getMongoUri, validateMongoUri } = require("../config/env");
 const User = require("../models/User");
 
 dotenv.config();
@@ -10,9 +11,14 @@ const bootstrapAdmin = async () => {
   const email = process.env.ADMIN_EMAIL?.toLowerCase().trim();
   const password = process.env.ADMIN_PASSWORD;
   const name = process.env.ADMIN_NAME?.trim() || "Admin";
+  const mongoValidation = validateMongoUri(getMongoUri());
 
   if (!email || !password) {
     throw new Error("ADMIN_EMAIL and ADMIN_PASSWORD are required");
+  }
+
+  if (!mongoValidation.ok) {
+    throw new Error(mongoValidation.reason);
   }
 
   await connectDB();

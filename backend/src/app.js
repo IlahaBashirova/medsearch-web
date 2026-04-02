@@ -1,7 +1,7 @@
 const express = require("express");
 const cors = require("cors");
-const dotenv = require("dotenv");
 const connectDB = require("./config/db");
+const { getMongoUri, validateMongoUri } = require("./config/env");
 const authRoutes = require("./routes/auth.routes"); 
 const pharmacyRoutes = require("./routes/pharmacy.routes");
 const swaggerUi = require("swagger-ui-express");
@@ -18,9 +18,6 @@ const supportRoutes = require("./routes/support.routes");
 const notificationRoutes = require("./routes/notification.routes");
 const analyticsRoutes = require("./routes/analytics.routes");
 const settingsRoutes = require("./routes/settings.routes");
-
-
-dotenv.config();
 
 const errorHandler = require("./middleware/errorHandler");
 const createApp = () => {
@@ -65,8 +62,10 @@ const app = createApp();
 const PORT = process.env.PORT || 5000;
 
 const startServer = async () => {
-  if (!process.env.MONGO_URI) {
-    throw new Error("MONGO_URI is required");
+  const mongoValidation = validateMongoUri(getMongoUri());
+
+  if (!mongoValidation.ok) {
+    throw new Error(mongoValidation.reason);
   }
 
   if (!process.env.JWT_SECRET) {

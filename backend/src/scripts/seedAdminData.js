@@ -2,6 +2,7 @@ const dotenv = require("dotenv");
 const bcrypt = require("bcryptjs");
 const mongoose = require("mongoose");
 const connectDB = require("../config/db");
+const { getMongoUri, validateMongoUri } = require("../config/env");
 const User = require("../models/User");
 const Pharmacy = require("../models/Pharmacy");
 const Medicine = require("../models/Medicine");
@@ -95,8 +96,10 @@ const upsertReservation = async (payload) =>
   );
 
 const seedAdminData = async () => {
-  if (!process.env.MONGO_URI) {
-    throw new Error("MONGO_URI is required");
+  const mongoValidation = validateMongoUri(getMongoUri());
+
+  if (!mongoValidation.ok) {
+    throw new Error(mongoValidation.reason);
   }
 
   await connectDB();
