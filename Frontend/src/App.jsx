@@ -15,6 +15,7 @@ import AdminUsersPage from "./admin/pages/AdminUsersPage.jsx";
 import AdminPharmaciesPage from "./admin/pages/AdminPharmaciesPage.jsx";
 import AdminCreatePharmacyPage from "./admin/pages/AdminCreatePharmacyPage.jsx";
 import AdminMedicinesPage from "./admin/pages/AdminMedicinesPage.jsx";
+import AdminCreateMedicinePage from "./admin/pages/AdminCreateMedicinePage.jsx";
 import AdminReservationsPage from "./admin/pages/AdminReservationsPage.jsx";
 import AdminRemindersPage from "./admin/pages/AdminRemindersPage.jsx";
 import AdminSupportPage from "./admin/pages/AdminSupportPage.jsx";
@@ -72,6 +73,15 @@ export default function App() {
           element={
             <RequireAdmin>
               <AdminMedicinesPage />
+            </RequireAdmin>
+          }
+        />
+
+        <Route
+          path="/admin/medicines/new"
+          element={
+            <RequireAdmin>
+              <AdminCreateMedicinePage />
             </RequireAdmin>
           }
         />

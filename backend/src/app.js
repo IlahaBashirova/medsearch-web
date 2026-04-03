@@ -14,6 +14,7 @@ const adminPharmaciesRoutes = require("./routes/adminPharmacies.routes");
 const medicineRoutes = require("./routes/medicine.routes");
 const adminReservationsRoutes = require("./routes/adminReservations.routes");
 const adminRemindersRoutes = require("./routes/adminReminders.routes");
+const userRemindersRoutes = require("./routes/userReminders.routes");
 const supportRoutes = require("./routes/support.routes");
 const notificationRoutes = require("./routes/notification.routes");
 const analyticsRoutes = require("./routes/analytics.routes");
@@ -44,6 +45,7 @@ const createApp = () => {
   app.use("/api/admin/medicines", medicineRoutes);
   app.use("/api/admin/reservations", adminReservationsRoutes);
   app.use("/api/admin/reminders", adminRemindersRoutes);
+  app.use("/api/reminders", userRemindersRoutes);
   app.use("/api/support", supportRoutes);
   app.use("/api/notifications", notificationRoutes);
   app.use("/api/admin/analytics", analyticsRoutes);

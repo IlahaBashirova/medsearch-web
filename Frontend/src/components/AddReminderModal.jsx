@@ -32,9 +32,10 @@ export default function AddReminderModal({ open, onClose, onSave }) {
 
         <form
           className="modal__body"
-          onSubmit={(e) => {
+          onSubmit={async (e) => {
             e.preventDefault();
-            const fd = new FormData(e.currentTarget);
+            const form = e.currentTarget;
+            const fd = new FormData(form);
 
             const name = String(fd.get("name") || "").trim();
             const dose = String(fd.get("dose") || "").trim();
@@ -47,17 +48,19 @@ export default function AddReminderModal({ open, onClose, onSave }) {
               return;
             }
 
-            onSave?.({
-              id: String(Date.now()),
-              name,
-              dose,
-              timesPerDay,
-              hours,
-              tag
-            });
-
-            e.currentTarget.reset();
-            onClose?.();
+            try {
+              await onSave?.({
+                name,
+                dose,
+                timesPerDay,
+                hours,
+                tag
+              });
+              form.reset();
+              onClose?.();
+            } catch (error) {
+              alert(error?.message || "Xatırlatma əlavə edilə bilmədi.");
+            }
           }}
         >
           <label className="mfield">

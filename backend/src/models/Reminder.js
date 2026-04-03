@@ -15,6 +15,9 @@ const reminderSchema = new mongoose.Schema(
     title: { type: String, required: true, trim: true },
     dose: { type: String, default: "" },
     scheduledAt: { type: Date, required: true },
+    hours: { type: [String], default: [] },
+    timesPerDay: { type: Number, default: 1 },
+    tag: { type: String, default: "" },
     channel: {
       type: String,
       enum: ["PUSH", "EMAIL", "SMS", "IN_APP"],

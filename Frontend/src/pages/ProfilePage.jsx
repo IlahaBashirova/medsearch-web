@@ -2,10 +2,11 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Topbar from "../components/Topbar.jsx";
 import AddReminderModal from "../components/AddReminderModal.jsx";
-import { getBellStates, getReminders, setBellStates, setReminders } from "../lib/storage.js";
+import { getBellStates, setBellStates } from "../lib/storage.js";
 import { clearToken, getToken } from "../lib/auth.js";
 import { jwtDecode } from "../lib/jwtDecode.js";
 import { getMyNotifications } from "../lib/notificationsApi.js";
+import { createMyReminder, deleteMyReminder, getMyReminders } from "../lib/remindersApi.js";
 
 function formatTimesText(timesCount, hoursArr) {
   const timesLabel = `Gündə ${timesCount} dəfə`;
@@ -30,15 +31,41 @@ function getCurrentUser() {
 export default function ProfilePage() {
   const navigate = useNavigate();
 
-  const [reminders, setRemindersState] = useState(() => getReminders());
+  const [reminders, setRemindersState] = useState([]);
   const [bells, setBellsState] = useState(() => getBellStates());
   const [modalOpen, setModalOpen] = useState(false);
   const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [remindersLoading, setRemindersLoading] = useState(true);
+  const [remindersError, setRemindersError] = useState("");
 
   const currentUser = useMemo(() => getCurrentUser(), []);
 
-  useEffect(() => setReminders(reminders), [reminders]);
   useEffect(() => setBellStates(bells), [bells]);
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadReminders() {
+      setRemindersLoading(true);
+      setRemindersError("");
+
+      try {
+        const result = await getMyReminders();
+        if (!mounted) return;
+        setRemindersState(Array.isArray(result) ? result : []);
+      } catch (error) {
+        if (!mounted) return;
+        setRemindersError(error?.message || "Xatırlatmaları yükləmək mümkün olmadı");
+      } finally {
+        if (mounted) setRemindersLoading(false);
+      }
+    }
+
+    loadReminders();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
   useEffect(() => {
     let mounted = true;
 
@@ -219,7 +246,12 @@ export default function ProfilePage() {
               <strong>Xroniki xəstəliklər üçün:</strong> Dərmanlarınızı vaxtında qəbul etməyi unutmayın!
             </div>
 
-            {reminders.map((r) => {
+            {remindersError ? <div className="info-box">{remindersError}</div> : null}
+
+            {remindersLoading ? (
+              <div className="info-box">Yüklənir...</div>
+            ) : (
+              reminders.map((r) => {
               const isOn = bells[r.id] ?? true;
 
               return (
@@ -254,7 +286,8 @@ export default function ProfilePage() {
                       className="icon-trash"
                       type="button"
                       title="Sil"
-                      onClick={() => {
+                      onClick={async () => {
+                        await deleteMyReminder(r.id);
                         setRemindersState((prev) => prev.filter((x) => x.id !== r.id));
                         setBellsState((prev) => {
                           const next = { ...prev };
@@ -268,7 +301,8 @@ export default function ProfilePage() {
                   </div>
                 </article>
               );
-            })}
+              })
+            )}
           </div>
         </article>
 
@@ -280,7 +314,10 @@ export default function ProfilePage() {
       <AddReminderModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        onSave={(rem) => setRemindersState((prev) => [...prev, rem])}
+        onSave={async (rem) => {
+          const created = await createMyReminder(rem);
+          setRemindersState((prev) => [created, ...prev]);
+        }}
       />
     </main>
   );
