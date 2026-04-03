@@ -1,14 +1,134 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 export default function HomePage() {
   const [q, setQ] = useState("");
+  const [searchFeedback, setSearchFeedback] = useState("");
   const navigate = useNavigate();
+  const fileInputRef = useRef(null);
+  const recognitionRef = useRef(null);
+  const isListeningRef = useRef(false);
 
   function goSearch(text) {
     const query = (text ?? q).trim();
     if (!query) return;
     navigate(`/results?q=${encodeURIComponent(query)}`);
+  }
+
+  useEffect(() => {
+    return () => {
+      try {
+        recognitionRef.current?.stop();
+      } catch {
+        // noop
+      }
+    };
+  }, []);
+
+  function handleVoiceSearch() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    if (!SpeechRecognition) {
+      setSearchFeedback("Səsli axtarış bu brauzerdə dəstəklənmir.");
+      return;
+    }
+
+    if (isListeningRef.current) {
+      try {
+        recognitionRef.current?.stop();
+      } catch {
+        setSearchFeedback("Səsli axtarış dayandırıla bilmədi.");
+      }
+      return;
+    }
+
+    setSearchFeedback("");
+
+    if (!recognitionRef.current) {
+      const recognition = new SpeechRecognition();
+      recognition.lang = "az-AZ";
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = () => {
+        isListeningRef.current = true;
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results?.[0]?.[0]?.transcript?.trim() || "";
+
+        if (!transcript) {
+          setSearchFeedback("Səsli axtarışdan mətn alınmadı.");
+          return;
+        }
+
+        setQ(transcript);
+        setSearchFeedback("");
+      };
+
+      recognition.onerror = (event) => {
+        isListeningRef.current = false;
+
+        if (event.error === "not-allowed" || event.error === "service-not-allowed") {
+          setSearchFeedback("Mikrofon icazəsi verilmədi.");
+          return;
+        }
+
+        if (event.error === "no-speech") {
+          setSearchFeedback("Səs aşkarlanmadı. Yenidən cəhd edin.");
+          return;
+        }
+
+        if (event.error === "audio-capture") {
+          setSearchFeedback("Mikrofon tapılmadı və ya istifadə edilə bilmədi.");
+          return;
+        }
+
+        setSearchFeedback("Səsli axtarış başlatmaq mümkün olmadı.");
+      };
+
+      recognition.onend = () => {
+        isListeningRef.current = false;
+      };
+
+      recognitionRef.current = recognition;
+    }
+
+    try {
+      recognitionRef.current.start();
+    } catch {
+      setSearchFeedback("Səsli axtarışı başlatmaq mümkün olmadı.");
+    }
+  }
+
+  function normalizeImageQuery(fileName) {
+    return String(fileName || "")
+      .replace(/\.[^.]+$/, "")
+      .replace(/[_-]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+  }
+
+  function handleImageAction() {
+    setSearchFeedback("");
+    fileInputRef.current?.click();
+  }
+
+  function handleImageSelected(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const parsedText = normalizeImageQuery(file.name);
+
+    if (!parsedText) {
+      setSearchFeedback("Şəkildən axtarış mətni əldə etmək mümkün olmadı.");
+      event.target.value = "";
+      return;
+    }
+
+    setQ(parsedText);
+    setSearchFeedback("");
+    event.target.value = "";
   }
 
   return (
@@ -53,18 +173,29 @@ export default function HomePage() {
             }}
           />
 
-          <span className="search__mid" aria-hidden="true" title="Səs">
+          <button className="search__mid" type="button" title="Səs" aria-label="Səsli axtarış" onClick={handleVoiceSearch}>
             <i className="fa-solid fa-microphone"></i>
-          </span>
+          </button>
 
-          <span className="search__mid" aria-hidden="true" title="Kamera">
+          <button className="search__mid" type="button" title="Kamera" aria-label="Resept şəkli seç" onClick={handleImageAction}>
             <i className="fa-regular fa-camera"></i>
-          </span>
+          </button>
 
           <button className="btn btn--primary btn--search" type="button" onClick={() => goSearch()}>
             Axtar
           </button>
         </div>
+
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          capture="environment"
+          onChange={handleImageSelected}
+          hidden
+        />
+
+        {searchFeedback ? <div className="info-box">{searchFeedback}</div> : null}
 
         <div className="popular">
           <div className="popular__label">Populyar axtarışlar:</div>

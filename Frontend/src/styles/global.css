@@ -281,6 +281,10 @@ a {
 .search__mid {
   display: grid;
   place-items: center;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
 }
 
 .search__input {
