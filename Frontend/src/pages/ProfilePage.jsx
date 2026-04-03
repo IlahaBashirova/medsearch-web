@@ -1,0 +1,324 @@
+import React, { useEffect, useMemo, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import Topbar from "../components/Topbar.jsx";
+import AddReminderModal from "../components/AddReminderModal.jsx";
+import { getBellStates, setBellStates } from "../lib/storage.js";
+import { clearToken, getToken } from "../lib/auth.js";
+import { jwtDecode } from "../lib/jwtDecode.js";
+import { getMyNotifications } from "../lib/notificationsApi.js";
+import { createMyReminder, deleteMyReminder, getMyReminders } from "../lib/remindersApi.js";
+
+function formatTimesText(timesCount, hoursArr) {
+  const timesLabel = `Gündə ${timesCount} dəfə`;
+  const hoursLabel = Array.isArray(hoursArr) && hoursArr.length ? ` - ${hoursArr.join(", ")}` : "";
+  return `${timesLabel}${hoursLabel}`;
+}
+
+function getCurrentUser() {
+  try {
+    const token = getToken();
+    if (!token) return { name: "İstifadəçi", email: "user@example.com" };
+    const decoded = jwtDecode(token);
+    return {
+      name: decoded?.name || "İstifadəçi",
+      email: decoded?.email || "user@example.com"
+    };
+  } catch {
+    return { name: "İstifadəçi", email: "user@example.com" };
+  }
+}
+
+export default function ProfilePage() {
+  const navigate = useNavigate();
+
+  const [reminders, setRemindersState] = useState([]);
+  const [bells, setBellsState] = useState(() => getBellStates());
+  const [modalOpen, setModalOpen] = useState(false);
+  const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const [remindersLoading, setRemindersLoading] = useState(true);
+  const [remindersError, setRemindersError] = useState("");
+
+  const currentUser = useMemo(() => getCurrentUser(), []);
+
+  useEffect(() => setBellStates(bells), [bells]);
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadReminders() {
+      setRemindersLoading(true);
+      setRemindersError("");
+
+      try {
+        const result = await getMyReminders();
+        if (!mounted) return;
+        setRemindersState(Array.isArray(result) ? result : []);
+      } catch (error) {
+        if (!mounted) return;
+        setRemindersError(error?.message || "Xatırlatmaları yükləmək mümkün olmadı");
+      } finally {
+        if (mounted) setRemindersLoading(false);
+      }
+    }
+
+    loadReminders();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+  useEffect(() => {
+    let mounted = true;
+
+    async function loadNotifications() {
+      try {
+        const result = await getMyNotifications({ limit: 1, unreadOnly: "true" });
+        if (!mounted) return;
+        setUnreadNotifications(result?.unreadCount || 0);
+      } catch {
+        if (!mounted) return;
+        setUnreadNotifications(0);
+      }
+    }
+
+    loadNotifications();
+    const intervalId = window.setInterval(loadNotifications, 10000);
+
+    return () => {
+      mounted = false;
+      window.clearInterval(intervalId);
+    };
+  }, []);
+
+  const schedule = useMemo(() => {
+    const rows = [];
+    reminders.forEach((r) => {
+      (r.hours || []).forEach((h) => rows.push({ time: h, name: r.name, dose: r.dose }));
+    });
+    rows.sort((a, b) => String(a.time).localeCompare(String(b.time)));
+    return rows;
+  }, [reminders]);
+
+  function toggleBell(key) {
+    setBellsState((prev) => ({ ...prev, [key]: !(prev[key] ?? true) }));
+  }
+
+  function bellClass(isOn) {
+    return isOn ? "is-bell-on" : "is-bell-off";
+  }
+
+  function handleLogout() {
+    clearToken();
+    navigate("/auth");
+  }
+
+  return (
+    <main className="page page-profile">
+      <Topbar
+        title="Profil"
+        left={
+          <button className="icon-btn" type="button" aria-label="Geri" onClick={() => navigate("/home")}>
+            <i className="fa-solid fa-arrow-left"></i>
+          </button>
+        }
+        right={
+          <button className="profile-exit" type="button" onClick={handleLogout}>
+            Çıxış
+          </button>
+        }
+      />
+
+      <section className="profile">
+        {/* User card */}
+        <article className="user-card">
+          <div className="user-card__avatar" aria-hidden="true">
+            <i className="fa-regular fa-user"></i>
+          </div>
+          <div className="user-card__info">
+            <div className="user-card__name">{currentUser.name}</div>
+            <div className="user-card__email">{currentUser.email}</div>
+          </div>
+        </article>
+
+        {/* ── YENİ: Bron Edilmiş Dərmanlar linki ── */}
+        <article
+          className="user-card user-card--link"
+          role="button"
+          tabIndex={0}
+          onClick={() => navigate("/reservations")}
+          onKeyDown={(e) => e.key === "Enter" && navigate("/reservations")}
+          style={{ cursor: "pointer" }}
+        >
+          <div className="user-card__avatar user-card__avatar--teal" aria-hidden="true">
+            <i className="fa-solid fa-bag-shopping"></i>
+          </div>
+          <div className="user-card__info">
+            <div className="user-card__name">Bron Edilmiş Dərmanlar</div>
+            <div className="user-card__email">Rezervasiyalarınızı idarə edin</div>
+          </div>
+          <i className="fa-solid fa-arrow-right user-card__arrow"></i>
+        </article>
+        {/* ── YENİ BLOK SONU ── */}
+
+        <article
+          className="user-card user-card--link"
+          role="button"
+          tabIndex={0}
+          onClick={() => navigate("/notifications")}
+          onKeyDown={(e) => e.key === "Enter" && navigate("/notifications")}
+          style={{ cursor: "pointer" }}
+        >
+          <div className="user-card__avatar user-card__avatar--teal" aria-hidden="true">
+            <i className="fa-regular fa-bell"></i>
+          </div>
+          <div className="user-card__info">
+            <div className="user-card__name">Bildirişlər</div>
+            <div className="user-card__email">
+              {unreadNotifications > 0 ? `${unreadNotifications} yeni bildiriş var` : "Bütün bildirişlər oxunub"}
+            </div>
+          </div>
+          <i className="fa-solid fa-arrow-right user-card__arrow"></i>
+        </article>
+
+        {/* Günlük cədvəl */}
+        <article className="panel">
+          <header className="panel__head panel__head--teal">
+            <div className="panel__head-left">
+              <i className="fa-regular fa-calendar"></i>
+              <span>Günlük Dərman Cədvəli</span>
+            </div>
+          </header>
+
+          <div className="panel__body panel__body--teal">
+            {schedule.length === 0 ? (
+              <div className="info-box">Hələ cədvəldə dərman yoxdur. "Əlavə et" ilə əlavə edə bilərsiniz.</div>
+            ) : (
+              schedule.map((s, idx) => {
+                const key = `schedule_${idx}`;
+                const isOn = bells[key] ?? true;
+
+                return (
+                  <div className="schedule-item" key={key}>
+                    <div className="schedule-item__left">
+                      <div className="schedule-item__icon">
+                        <i className="fa-regular fa-clock"></i>
+                      </div>
+                      <div className="schedule-item__main">
+                        <div className="schedule-item__time">{s.time}</div>
+                        <div className="schedule-item__drug">
+                          <i className="fa-solid fa-capsules"></i>
+                          {s.name} <span className="schedule-item__dose">({s.dose})</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      className={`schedule-item__bell ${bellClass(isOn)}`}
+                      type="button"
+                      onClick={() => toggleBell(key)}
+                      aria-pressed={String(isOn)}
+                      title="Xatırlatma"
+                    >
+                      <i className="fa-regular fa-bell"></i>
+                    </button>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </article>
+
+        {/* Xatırlatmalar */}
+        <article className="panel">
+          <header className="panel__head panel__head--light">
+            <div className="panel__head-left">
+              <i className="fa-regular fa-bell"></i>
+              <span>Dərman Xatırlatmaları</span>
+            </div>
+
+            <button className="btn btn--primary panel__add" type="button" onClick={() => setModalOpen(true)}>
+              <i className="fa-solid fa-plus"></i>
+              Əlavə et
+            </button>
+          </header>
+
+          <div className="panel__body">
+            <div className="info-box">
+              <strong>Xroniki xəstəliklər üçün:</strong> Dərmanlarınızı vaxtında qəbul etməyi unutmayın!
+            </div>
+
+            {remindersError ? <div className="info-box">{remindersError}</div> : null}
+
+            {remindersLoading ? (
+              <div className="info-box">Yüklənir...</div>
+            ) : (
+              reminders.map((r) => {
+              const isOn = bells[r.id] ?? true;
+
+              return (
+                <article className="reminder-card" key={r.id}>
+                  <div className="reminder-card__left">
+                    <div className="reminder-card__icon">
+                      <i className="fa-solid fa-capsules"></i>
+                    </div>
+                    <div className="reminder-card__main">
+                      <div className="reminder-card__title">{r.name}</div>
+                      <div className="reminder-card__sub">{r.dose}</div>
+                      <div className="reminder-card__meta">
+                        <i className="fa-regular fa-clock"></i>
+                        {formatTimesText(r.timesPerDay, r.hours)}
+                      </div>
+                      {r.tag ? <div className="tag tag--purple">{r.tag}</div> : null}
+                    </div>
+                  </div>
+
+                  <div className="reminder-card__actions">
+                    <button
+                      className={`icon-square ${bellClass(isOn)}`}
+                      type="button"
+                      onClick={() => toggleBell(r.id)}
+                      aria-pressed={String(isOn)}
+                      title="Bildiriş"
+                    >
+                      <i className="fa-regular fa-bell"></i>
+                    </button>
+
+                    <button
+                      className="icon-trash"
+                      type="button"
+                      title="Sil"
+                      onClick={async () => {
+                        await deleteMyReminder(r.id);
+                        setRemindersState((prev) => prev.filter((x) => x.id !== r.id));
+                        setBellsState((prev) => {
+                          const next = { ...prev };
+                          delete next[r.id];
+                          return next;
+                        });
+                      }}
+                    >
+                      <i className="fa-regular fa-trash-can"></i>
+                    </button>
+                  </div>
+                </article>
+              );
+              })
+            )}
+          </div>
+        </article>
+
+        <footer className="profile-footnote">
+          🔒 Məlumatlarınız təhlükəsizdir. MedSearch PII və ya həssas məlumatları toplamaq üçün nəzərdə tutulmayıb.
+        </footer>
+      </section>
+
+      <AddReminderModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSave={async (rem) => {
+          const created = await createMyReminder(rem);
+          setRemindersState((prev) => [created, ...prev]);
+        }}
+      />
+    </main>
+  );
+}
