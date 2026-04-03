@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import AdminLayout from "../layout/AdminLayout.jsx";
-import { createAdminMedicine, getAdminMedicines, getAdminPharmacies, updateAdminMedicine } from "../lib/adminApi.js";
+import { getAdminMedicines, updateAdminMedicine } from "../lib/adminApi.js";
 
 function MedicineStatus({ item }) {
   const tone = item.isActive ? "success" : "danger";
@@ -8,11 +9,11 @@ function MedicineStatus({ item }) {
 }
 
 export default function AdminMedicinesPage() {
+  const navigate = useNavigate();
   const abortRef = useRef(null);
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState("");
   const [medicines, setMedicines] = useState([]);
-  const [pharmacyOptions, setPharmacyOptions] = useState([]);
   const [summary, setSummary] = useState({ total: 0, active: 0, inactive: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -27,7 +28,7 @@ export default function AdminMedicinesPage() {
     setError("");
 
     try {
-      const [listRes, totalRes, activeRes, inactiveRes, pharmaciesRes] = await Promise.all([
+      const [listRes, totalRes, activeRes, inactiveRes] = await Promise.all([
         getAdminMedicines(
           {
             search,
@@ -38,12 +39,10 @@ export default function AdminMedicinesPage() {
         ),
         getAdminMedicines({ limit: 1 }, ac.signal),
         getAdminMedicines({ isActive: "true", limit: 1 }, ac.signal),
-        getAdminMedicines({ isActive: "false", limit: 1 }, ac.signal),
-        getAdminPharmacies({ limit: 100 }, ac.signal)
+        getAdminMedicines({ isActive: "false", limit: 1 }, ac.signal)
       ]);
 
       setMedicines(Array.isArray(listRes?.data) ? listRes.data : []);
-      setPharmacyOptions(Array.isArray(pharmaciesRes?.data) ? pharmaciesRes.data : []);
       setSummary({
         total: totalRes?.total || 0,
         active: activeRes?.total || 0,
@@ -61,38 +60,6 @@ export default function AdminMedicinesPage() {
     loadMedicines();
     return () => abortRef.current?.abort();
   }, [loadMedicines]);
-
-  const fallbackPharmacyId = pharmacyOptions[0]?._id || "";
-
-  async function handleQuickAdd() {
-    if (!fallbackPharmacyId) {
-      window.alert("Əvvəlcə ən azı bir aptek olmalıdır");
-      return;
-    }
-
-    setActionLoading("create");
-
-    try {
-      await createAdminMedicine({
-        name: `Yeni Dərman ${Date.now().toString().slice(-4)}`,
-        category: "Digər",
-        description: "Admin panelindən əlavə edildi",
-        manufacturer: "MedSearch",
-        dosageForm: "Tablet",
-        strength: "100mg",
-        price: 5,
-        stock: 20,
-        pharmacyId: fallbackPharmacyId,
-        requiresPrescription: false,
-        isActive: true
-      });
-      await loadMedicines();
-    } catch (err) {
-      window.alert(err?.message || "Dərman əlavə olunmadı");
-    } finally {
-      setActionLoading("");
-    }
-  }
 
   async function handleToggleMedicine(item) {
     setActionLoading(item._id);
@@ -147,9 +114,9 @@ export default function AdminMedicinesPage() {
             </select>
           </label>
 
-          <button type="button" className="admin-primary-btn" onClick={handleQuickAdd} disabled={actionLoading === "create"}>
+          <button type="button" className="admin-primary-btn" onClick={() => navigate("/admin/medicines/new")}>
             <i className="fa-solid fa-plus"></i>
-            {actionLoading === "create" ? "Əlavə edilir..." : "Yeni dərman"}
+            Yeni dərman
           </button>
         </div>
       </section>
