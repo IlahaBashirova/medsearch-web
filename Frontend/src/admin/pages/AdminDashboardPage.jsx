@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import AdminLayout from "../layout/AdminLayout.jsx";
+import { getAdminDashboard } from "../lib/adminApi.js";
 import {
-  dashboardMetrics,
   recentActivities,
   recentReservations,
   reservationBars,
@@ -73,6 +73,73 @@ function BarChartCard() {
 }
 
 export default function AdminDashboardPage() {
+  const abortRef = useRef(null);
+  const [metrics, setMetrics] = useState({
+    users: 0,
+    pharmacies: 0,
+    reservations: 0,
+    activeReminders: 0
+  });
+
+  useEffect(() => {
+    const ac = new AbortController();
+    abortRef.current = ac;
+
+    async function loadDashboard() {
+      try {
+        const result = await getAdminDashboard(ac.signal);
+        const summary = result?.metrics || {};
+
+        setMetrics({
+          users: summary.users || 0,
+          pharmacies: summary.pharmacies || 0,
+          reservations: summary.reservations || 0,
+          activeReminders: summary.activeReminders || 0
+        });
+      } catch (error) {
+        if (error?.name === "AbortError") return;
+      }
+    }
+
+    loadDashboard();
+
+    return () => ac.abort();
+  }, []);
+
+  const dashboardMetrics = useMemo(
+    () => [
+      {
+        label: "Ümumi İstifadəçilər",
+        value: metrics.users.toLocaleString("az-AZ"),
+        change: "Canlı məlumat",
+        icon: "fa-regular fa-user",
+        tone: "mint"
+      },
+      {
+        label: "Ümumi Apteklər",
+        value: metrics.pharmacies.toLocaleString("az-AZ"),
+        change: "Canlı məlumat",
+        icon: "fa-regular fa-hospital",
+        tone: "blue"
+      },
+      {
+        label: "Rezervasiyalar",
+        value: metrics.reservations.toLocaleString("az-AZ"),
+        change: "Canlı məlumat",
+        icon: "fa-regular fa-calendar",
+        tone: "violet"
+      },
+      {
+        label: "Aktiv Xatırlatmalar",
+        value: metrics.activeReminders.toLocaleString("az-AZ"),
+        change: "Canlı məlumat",
+        icon: "fa-regular fa-bell",
+        tone: "neutral"
+      }
+    ],
+    [metrics]
+  );
+
   return (
     <AdminLayout title="Dashboard" subtitle="Sistem statistikalarına və fəaliyyətlərə baxış">
       <section className="admin-metrics-grid">

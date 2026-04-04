@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import AdminLayout from "../layout/AdminLayout.jsx";
 import { getAdminUsers, updateAdminUser } from "../lib/adminApi.js";
 
@@ -17,6 +18,7 @@ function StatusBadge({ status }) {
 }
 
 export default function AdminUsersPage() {
+  const navigate = useNavigate();
   const abortRef = useRef(null);
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("");
@@ -42,7 +44,7 @@ export default function AdminUsersPage() {
         getAdminUsers({ status: "SUSPENDED", limit: 1 }, ac.signal)
       ]);
 
-      setUsers(Array.isArray(listRes?.data) ? listRes.data : []);
+      setUsers(Array.isArray(listRes?.data) ? listRes.data.filter((item) => item.role !== "ADMIN") : []);
       setSummary({
         total: totalRes?.total || 0,
         active: activeRes?.total || 0,
@@ -61,7 +63,7 @@ export default function AdminUsersPage() {
     return () => abortRef.current?.abort();
   }, [loadUsers]);
 
-  const tableRows = useMemo(() => users, [users]);
+  const tableRows = useMemo(() => users.filter((user) => user.role !== "ADMIN"), [users]);
 
   async function handleToggleStatus(user) {
     const nextStatus = user.status === "ACTIVE" ? "SUSPENDED" : "ACTIVE";
@@ -152,14 +154,14 @@ export default function AdminUsersPage() {
                 <span>{user.reservationCount ?? "—"}</span>
 
                 <div className="admin-row-actions">
-                  <button type="button" title="Bax">
+                  <button type="button" title="Bax" onClick={() => navigate(`/admin/users/${user._id}`)}>
                     <i className="fa-regular fa-eye"></i>
                   </button>
                   <button
                     type="button"
                     title={user.status === "ACTIVE" ? "Blokla" : "Aktiv et"}
                     onClick={() => handleToggleStatus(user)}
-                    disabled={updatingId === user._id}
+                    disabled={updatingId === user._id || user.role === "ADMIN"}
                   >
                     <i className={user.status === "ACTIVE" ? "fa-solid fa-ban" : "fa-solid fa-check"}></i>
                   </button>

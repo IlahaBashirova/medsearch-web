@@ -116,10 +116,10 @@ export default function AdminPharmaciesPage() {
                 </div>
 
                 <div className="admin-row-actions">
-                  <button type="button" title="Bax">
+                  <button type="button" title="Bax" onClick={() => navigate(`/admin/pharmacies/${pharmacy._id}`)}>
                     <i className="fa-regular fa-eye"></i>
                   </button>
-                  <button type="button" title="Düzəliş mümkün deyil">
+                  <button type="button" title="Düzəliş et" onClick={() => navigate(`/admin/pharmacies/${pharmacy._id}/edit`)}>
                     <i className="fa-solid fa-pen"></i>
                   </button>
                 </div>

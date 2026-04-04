@@ -13,6 +13,7 @@ router.use(auth, authorize("ADMIN"));
 
 router.get("/", asyncHandler(adminPharmaciesController.list));
 router.post("/", validate(validatePharmacyCreate), asyncHandler(adminPharmaciesController.create));
+router.get("/:pharmacyId", asyncHandler(adminPharmaciesController.getById));
 router.patch(
   "/:pharmacyId",
   validate(validatePharmacyUpdate),

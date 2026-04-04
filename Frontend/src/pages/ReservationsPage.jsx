@@ -17,11 +17,18 @@ function parseUserId() {
 
 function StatusBadge({ status }) {
   const map = {
-    "Aktiv": "badge badge--active",
-    "Tamamlandı": "badge badge--done",
-    "Ləğv edildi": "badge badge--cancelled"
+    "Yadda saxlanıb": "badge badge--active",
+    "Alındı": "badge badge--done",
+    "Silinib": "badge badge--cancelled"
   };
   return <span className={map[status] || "badge"}>{status}</span>;
+}
+
+function formatUserStatus(status) {
+  if (status === "Aktiv") return "Yadda saxlanıb";
+  if (status === "Tamamlandı") return "Alındı";
+  if (status === "Ləğv edildi") return "Silinib";
+  return status;
 }
 
 function ReservationCard({ item, onCancel, cancelling }) {
@@ -38,7 +45,7 @@ function ReservationCard({ item, onCancel, cancelling }) {
           <h3 className="res-card__title">{item.medicineName}</h3>
           <p className="res-card__qty">Miqdar: {item.quantity} ədəd</p>
         </div>
-        <StatusBadge status={item.status} />
+        <StatusBadge status={formatUserStatus(item.status)} />
       </div>
 
       <div className="res-card__pharmacy">
@@ -80,7 +87,7 @@ function ReservationCard({ item, onCancel, cancelling }) {
             disabled={cancelling === item._id}
             onClick={() => onCancel(item._id)}
           >
-            {cancelling === item._id ? "Ləğv edilir..." : "Ləğv et"}
+            {cancelling === item._id ? "Silinir..." : "Siyahıdan sil"}
           </button>
         </div>
       ) : null}
@@ -136,13 +143,13 @@ export default function ReservationsPage() {
   }, [load]);
 
   async function handleCancel(reservationId) {
-    if (!window.confirm("Bronu ləğv etmək istədiyinizə əminsiniz?")) return;
+    if (!window.confirm("Bu dərmanı yadda saxlananlar siyahısından silmək istədiyinizə əminsiniz?")) return;
     setCancelling(reservationId);
     try {
       await updateReservationStatus(reservationId, "Ləğv edildi");
       await load();
     } catch (err) {
-      alert(err?.message || "Ləğv etmək mümkün olmadı");
+      alert(err?.message || "Silmək mümkün olmadı");
     } finally {
       setCancelling(null);
     }
@@ -155,7 +162,7 @@ export default function ReservationsPage() {
           <button className="btn-back" onClick={() => navigate(-1)} aria-label="Geri">
             <i className="fa-solid fa-arrow-left"></i>
           </button>
-          <h1 className="page-header__title">Bron Edilmiş Dərmanlar</h1>
+          <h1 className="page-header__title">Yadda saxlanan dərmanlar</h1>
         </header>
 
         {/* Summary card */}
@@ -165,23 +172,23 @@ export default function ReservationsPage() {
               <i className="fa-solid fa-bag-shopping"></i>
             </div>
             <div>
-              <h2 className="res-summary__title">Rezervasiyalarınız</h2>
-              <p className="res-summary__sub">Bütün bron edilmiş dərmanlar</p>
+              <h2 className="res-summary__title">Yadda saxladıqlarınız</h2>
+              <p className="res-summary__sub">Sonra baxmaq və almaq üçün saxladığınız dərmanlar</p>
             </div>
           </div>
 
           <div className="res-summary__stats">
             <div className="res-stat">
               <span className="res-stat__num res-stat__num--active">{stats.aktiv}</span>
-              <span className="res-stat__label">Aktiv</span>
+              <span className="res-stat__label">Yadda saxlanıb</span>
             </div>
             <div className="res-stat">
               <span className="res-stat__num res-stat__num--done">{stats.tamamlandi}</span>
-              <span className="res-stat__label">Tamamlandı</span>
+              <span className="res-stat__label">Alındı</span>
             </div>
             <div className="res-stat">
               <span className="res-stat__num res-stat__num--cancelled">{stats.legvEdildi}</span>
-              <span className="res-stat__label">Ləğv edildi</span>
+              <span className="res-stat__label">Silinib</span>
             </div>
           </div>
         </section>
@@ -203,7 +210,7 @@ export default function ReservationsPage() {
           ) : reservations.length === 0 ? (
             <div className="empty-state">
               <i className="fa-solid fa-bag-shopping empty-state__icon"></i>
-              <p>Hələ heç bir rezervasiya yoxdur</p>
+              <p>Hələ heç bir yadda saxlanan dərman yoxdur</p>
             </div>
           ) : (
             reservations.map((item) => (

@@ -62,7 +62,7 @@ export default function ResultsPage() {
     if (reservedIds.has(pharmacy.id) || reservingId) return;
 
     if (getSessionUser().isGuest) {
-      setReserveError("Rezervasiya üçün giriş edin.");
+      setReserveError("Yadda saxlamaq üçün giriş edin.");
       return;
     }
 
@@ -81,7 +81,7 @@ export default function ResultsPage() {
 
       setReservedIds((prev) => new Set(prev).add(pharmacy.id));
     } catch (e) {
-      setReserveError(e?.message || "Rezervasiya yaratmaq mümkün olmadı");
+      setReserveError(e?.message || "Yadda saxlamaq mümkün olmadı");
     } finally {
       setReservingId("");
     }
