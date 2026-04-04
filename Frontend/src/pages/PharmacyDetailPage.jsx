@@ -41,6 +41,8 @@ export default function PharmacyDetailPage() {
     setChatOpen(true);
   }, [searchParams]);
 
+  const pharmacyTel = cleanPhoneToTel(pharmacy?.phone);
+
   return (
     <main className="page page-detail">
       <Topbar
@@ -104,18 +106,19 @@ export default function PharmacyDetailPage() {
           </div>
 
           <div className="detail-actions">
-            <button
+            <a
               className="btn btn--primary detail-actions__btn"
-              type="button"
-              onClick={() => {
-                const tel = cleanPhoneToTel(pharmacy?.phone);
-                if (!tel) return alert("Telefon nömrəsi tapılmadı.");
-                window.location.href = tel;
+              href={pharmacyTel || undefined}
+              aria-label="Call pharmacy"
+              onClick={(event) => {
+                if (!pharmacyTel) {
+                  event.preventDefault();
+                }
               }}
             >
               <i className="fa-solid fa-phone"></i>
               Zəng et
-            </button>
+            </a>
 
             <button
               className="btn btn--outline detail-actions__btn"

@@ -139,7 +139,6 @@ export default function ProfilePage() {
           </div>
         </article>
 
-        {/* ── YENİ: Bron Edilmiş Dərmanlar linki ── */}
         <article
           className="user-card user-card--link"
           role="button"
@@ -152,12 +151,11 @@ export default function ProfilePage() {
             <i className="fa-solid fa-bag-shopping"></i>
           </div>
           <div className="user-card__info">
-            <div className="user-card__name">Bron Edilmiş Dərmanlar</div>
-            <div className="user-card__email">Rezervasiyalarınızı idarə edin</div>
+            <div className="user-card__name">Yadda saxlanan dərmanlar</div>
+            <div className="user-card__email">Saxladığınız dərman seçimlərinə baxın</div>
           </div>
           <i className="fa-solid fa-arrow-right user-card__arrow"></i>
         </article>
-        {/* ── YENİ BLOK SONU ── */}
 
         <article
           className="user-card user-card--link"

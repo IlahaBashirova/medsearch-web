@@ -11,7 +11,7 @@ exports.getOverview = async () => {
     pharmaciesCount,
     medicinesCount,
     reservationsCount,
-    remindersCount,
+    activeRemindersCount,
     supportOpenCount,
     recentUsers,
     recentReservations
@@ -20,7 +20,7 @@ exports.getOverview = async () => {
     Pharmacy.countDocuments(),
     Medicine.countDocuments(),
     Reservation.countDocuments(),
-    Reminder.countDocuments(),
+    Reminder.countDocuments({ isEnabled: true }),
     SupportConversation.countDocuments({ status: { $ne: "RESOLVED" } }),
     User.find().sort({ createdAt: -1 }).limit(5).select("name email role status createdAt"),
     Reservation.find()
@@ -36,7 +36,7 @@ exports.getOverview = async () => {
       pharmacies: pharmaciesCount,
       medicines: medicinesCount,
       reservations: reservationsCount,
-      reminders: remindersCount,
+      activeReminders: activeRemindersCount,
       openSupportConversations: supportOpenCount
     },
     recentUsers,

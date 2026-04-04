@@ -16,6 +16,10 @@ export function getAdminUsers(params, signal) {
   return apiRequest(`/api/admin/users${toQueryString(params)}`, { signal });
 }
 
+export function getAdminUser(userId, signal) {
+  return apiRequest(`/api/admin/users/${userId}`, { signal });
+}
+
 export function updateAdminUser(userId, payload, signal) {
   return apiRequest(`/api/admin/users/${userId}`, {
     method: "PATCH",
@@ -36,8 +40,24 @@ export function createAdminPharmacy(payload, signal) {
   });
 }
 
+export function getAdminPharmacy(pharmacyId, signal) {
+  return apiRequest(`/api/admin/pharmacies/${pharmacyId}`, { signal });
+}
+
+export function updateAdminPharmacy(pharmacyId, payload, signal) {
+  return apiRequest(`/api/admin/pharmacies/${pharmacyId}`, {
+    method: "PATCH",
+    body: payload,
+    signal
+  });
+}
+
 export function getAdminMedicines(params, signal) {
   return apiRequest(`/api/admin/medicines${toQueryString(params)}`, { signal });
+}
+
+export function getAdminMedicine(medicineId, signal) {
+  return apiRequest(`/api/admin/medicines/${medicineId}`, { signal });
 }
 
 export function createAdminMedicine(payload, signal) {
@@ -122,4 +142,8 @@ export function getAdminSystemInfo(signal) {
 
 export function getAdminQuickActions(signal) {
   return apiRequest(`/api/admin/settings/quick-actions`, { signal });
+}
+
+export function getAdminDashboard(signal) {
+  return apiRequest(`/api/admin/dashboard`, { signal });
 }

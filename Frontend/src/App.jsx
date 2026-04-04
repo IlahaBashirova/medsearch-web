@@ -12,9 +12,12 @@ import ReservationsPage from "./pages/ReservationsPage.jsx";
 import { RequireAdmin } from "./admin/components/AdminRouteGuards.jsx";
 import AdminDashboardPage from "./admin/pages/AdminDashboardPage.jsx";
 import AdminUsersPage from "./admin/pages/AdminUsersPage.jsx";
+import AdminUserDetailPage from "./admin/pages/AdminUserDetailPage.jsx";
 import AdminPharmaciesPage from "./admin/pages/AdminPharmaciesPage.jsx";
+import AdminPharmacyDetailPage from "./admin/pages/AdminPharmacyDetailPage.jsx";
 import AdminCreatePharmacyPage from "./admin/pages/AdminCreatePharmacyPage.jsx";
 import AdminMedicinesPage from "./admin/pages/AdminMedicinesPage.jsx";
+import AdminMedicineDetailPage from "./admin/pages/AdminMedicineDetailPage.jsx";
 import AdminCreateMedicinePage from "./admin/pages/AdminCreateMedicinePage.jsx";
 import AdminReservationsPage from "./admin/pages/AdminReservationsPage.jsx";
 import AdminRemindersPage from "./admin/pages/AdminRemindersPage.jsx";
@@ -51,6 +54,15 @@ export default function App() {
         />
 
         <Route
+          path="/admin/users/:userId"
+          element={
+            <RequireAdmin>
+              <AdminUserDetailPage />
+            </RequireAdmin>
+          }
+        />
+
+        <Route
           path="/admin/pharmacies"
           element={
             <RequireAdmin>
@@ -61,6 +73,24 @@ export default function App() {
 
         <Route
           path="/admin/pharmacies/new"
+          element={
+            <RequireAdmin>
+              <AdminCreatePharmacyPage />
+            </RequireAdmin>
+          }
+        />
+
+        <Route
+          path="/admin/pharmacies/:pharmacyId"
+          element={
+            <RequireAdmin>
+              <AdminPharmacyDetailPage />
+            </RequireAdmin>
+          }
+        />
+
+        <Route
+          path="/admin/pharmacies/:pharmacyId/edit"
           element={
             <RequireAdmin>
               <AdminCreatePharmacyPage />
@@ -82,6 +112,15 @@ export default function App() {
           element={
             <RequireAdmin>
               <AdminCreateMedicinePage />
+            </RequireAdmin>
+          }
+        />
+
+        <Route
+          path="/admin/medicines/:medicineId"
+          element={
+            <RequireAdmin>
+              <AdminMedicineDetailPage />
             </RequireAdmin>
           }
         />

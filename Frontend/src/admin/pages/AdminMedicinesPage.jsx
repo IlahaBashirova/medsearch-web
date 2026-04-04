@@ -153,7 +153,7 @@ export default function AdminMedicinesPage() {
                 <MedicineStatus item={item} />
 
                 <div className="admin-row-actions">
-                  <button type="button" title="Bax">
+                  <button type="button" title="Bax" onClick={() => navigate(`/admin/medicines/${item._id}`)}>
                     <i className="fa-regular fa-eye"></i>
                   </button>
                   <button

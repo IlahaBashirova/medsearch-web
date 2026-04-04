@@ -3,16 +3,16 @@ import AdminLayout from "../layout/AdminLayout.jsx";
 import { getAdminReservations, updateAdminReservationStatus } from "../lib/adminApi.js";
 
 function normalizeStatusLabel(status) {
-  if (status === "PENDING") return "Gözləyir";
-  if (status === "ACTIVE") return "Aktiv";
-  if (status === "COMPLETED") return "Təsdiqləndi";
-  if (status === "CANCELLED") return "Ləğv edilib";
+  if (status === "PENDING") return "Yadda saxlanıb";
+  if (status === "ACTIVE") return "Yadda saxlanıb";
+  if (status === "COMPLETED") return "Alınıb";
+  if (status === "CANCELLED") return "Silinib";
   return status || "—";
 }
 
 function ReservationStatusBadge({ status }) {
   const tone =
-    status === "COMPLETED" ? "success" : status === "CANCELLED" ? "danger" : status === "PENDING" ? "warning" : "neutral";
+    status === "COMPLETED" ? "success" : status === "CANCELLED" ? "danger" : "neutral";
 
   return <span className={`admin-status admin-status--${tone}`}>{normalizeStatusLabel(status)}</span>;
 }
@@ -22,7 +22,7 @@ export default function AdminReservationsPage() {
   const [status, setStatus] = useState("");
   const [search, setSearch] = useState("");
   const [reservations, setReservations] = useState([]);
-  const [summary, setSummary] = useState({ total: 0, pending: 0, completed: 0, cancelled: 0 });
+  const [summary, setSummary] = useState({ total: 0, saved: 0, completed: 0, cancelled: 0 });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [actionLoading, setActionLoading] = useState("");
@@ -36,33 +36,41 @@ export default function AdminReservationsPage() {
     setError("");
 
     try {
-      const [listRes, totalRes, pendingRes, completedRes, cancelledRes] = await Promise.all([
-        getAdminReservations({ status, limit: 20 }, ac.signal),
+      const [listRes, totalRes, activeRes, pendingRes, completedRes, cancelledRes] = await Promise.all([
+        getAdminReservations({ limit: 20 }, ac.signal),
         getAdminReservations({ limit: 1 }, ac.signal),
+        getAdminReservations({ status: "ACTIVE", limit: 1 }, ac.signal),
         getAdminReservations({ status: "PENDING", limit: 1 }, ac.signal),
         getAdminReservations({ status: "COMPLETED", limit: 1 }, ac.signal),
         getAdminReservations({ status: "CANCELLED", limit: 1 }, ac.signal)
       ]);
 
       const data = Array.isArray(listRes?.data) ? listRes.data : [];
+      const filteredByStatus =
+        status === "saved"
+          ? data.filter((item) => item.status === "ACTIVE" || item.status === "PENDING")
+          : status === "COMPLETED" || status === "CANCELLED"
+            ? data.filter((item) => item.status === status)
+            : data;
+
       const filtered = search
-        ? data.filter((item) =>
+        ? filteredByStatus.filter((item) =>
             [item.userId?.name, item.userId?.email, item.pharmacyName, item.medicineName]
               .filter(Boolean)
               .some((value) => value.toLowerCase().includes(search.toLowerCase()))
           )
-        : data;
+        : filteredByStatus;
 
       setReservations(filtered);
       setSummary({
         total: totalRes?.total || 0,
-        pending: pendingRes?.total || 0,
+        saved: (activeRes?.total || 0) + (pendingRes?.total || 0),
         completed: completedRes?.total || 0,
         cancelled: cancelledRes?.total || 0
       });
     } catch (err) {
       if (err?.name === "AbortError") return;
-      setError(err?.message || "Rezervasiyaları yükləmək mümkün olmadı");
+      setError(err?.message || "Yadda saxlanan dərmanları yükləmək mümkün olmadı");
     } finally {
       setLoading(false);
     }
@@ -80,7 +88,7 @@ export default function AdminReservationsPage() {
       await updateAdminReservationStatus(item._id, { status: nextStatus });
       await loadReservations();
     } catch (err) {
-      window.alert(err?.message || "Rezervasiya yenilənmədi");
+      window.alert(err?.message || "Saxlanmış dərman yenilənmədi");
     } finally {
       setActionLoading("");
     }
@@ -89,22 +97,22 @@ export default function AdminReservationsPage() {
   const rows = useMemo(() => reservations, [reservations]);
 
   return (
-    <AdminLayout title="Rezervasiya idarəetməsi" subtitle="Bütün dərman rezervasiyalarını idarə edin">
+    <AdminLayout title="Yadda saxlanan dərmanlar" subtitle="İstifadəçilərin saxladığı dərman seçimlərini izləyin">
       <section className="admin-metrics-grid admin-metrics-grid--pharmacies">
         <article className="admin-metric-card">
-          <p>Ümumi rezervasiyalar</p>
+          <p>Ümumi saxlananlar</p>
           <strong>{summary.total}</strong>
         </article>
         <article className="admin-metric-card">
-          <p>Gözləyən</p>
-          <strong className="admin-figure admin-figure--warning">{summary.pending}</strong>
+          <p>Yadda saxlanıb</p>
+          <strong className="admin-figure admin-figure--blue">{summary.saved}</strong>
         </article>
         <article className="admin-metric-card">
-          <p>Təsdiqlənmiş</p>
+          <p>Alınıb</p>
           <strong className="admin-figure admin-figure--success">{summary.completed}</strong>
         </article>
         <article className="admin-metric-card">
-          <p>Ləğv edilmiş</p>
+          <p>Silinib</p>
           <strong className="admin-figure admin-figure--danger">{summary.cancelled}</strong>
         </article>
       </section>
@@ -114,7 +122,7 @@ export default function AdminReservationsPage() {
           <i className="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
           <input
             type="text"
-            placeholder="Rezervasiya axtar..."
+            placeholder="Saxlanmış dərman axtar..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -125,10 +133,9 @@ export default function AdminReservationsPage() {
             <i className="fa-solid fa-filter" aria-hidden="true"></i>
             <select value={status} onChange={(e) => setStatus(e.target.value)}>
               <option value="">Hamısı</option>
-              <option value="PENDING">Gözləyən</option>
-              <option value="ACTIVE">Aktiv</option>
-              <option value="COMPLETED">Təsdiqlənmiş</option>
-              <option value="CANCELLED">Ləğv edilmiş</option>
+              <option value="saved">Yadda saxlanıb</option>
+              <option value="COMPLETED">Alınıb</option>
+              <option value="CANCELLED">Silinib</option>
             </select>
           </label>
         </div>
@@ -140,7 +147,7 @@ export default function AdminReservationsPage() {
         ) : error ? (
           <div className="admin-empty-state admin-empty-state--error">{error}</div>
         ) : rows.length === 0 ? (
-          <div className="admin-empty-state">Rezervasiya tapılmadı</div>
+          <div className="admin-empty-state">Saxlanmış dərman tapılmadı</div>
         ) : (
           <div className="admin-table admin-table--reservations">
             <div className="admin-table__head">
@@ -181,23 +188,10 @@ export default function AdminReservationsPage() {
                 <ReservationStatusBadge status={item.status} />
 
                 <div className="admin-row-actions admin-row-actions--wide">
-                  {item.status !== "COMPLETED" ? (
-                    <button
-                      type="button"
-                      title="Təsdiqlə"
-                      onClick={() => handleStatusChange(item, "COMPLETED")}
-                      disabled={actionLoading === item._id}
-                    >
-                      <i className="fa-solid fa-check"></i>
-                    </button>
-                  ) : (
-                    <span className="admin-row-actions__placeholder">—</span>
-                  )}
-
                   {item.status !== "CANCELLED" ? (
                     <button
                       type="button"
-                      title="Ləğv et"
+                      title="Sil"
                       onClick={() => handleStatusChange(item, "CANCELLED")}
                       disabled={actionLoading === item._id}
                     >

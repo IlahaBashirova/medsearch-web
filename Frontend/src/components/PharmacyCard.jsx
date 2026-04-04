@@ -32,21 +32,21 @@ export default function PharmacyCard({ pharmacy, reserved, reserving, onDetails,
         >
           {reserved ? (
             <>
-              <i className="fa-regular fa-circle-check"></i> Bron edildi
+              <i className="fa-regular fa-circle-check"></i> Yadda saxlanıb
             </>
           ) : reserving ? (
             <>
-              <i className="fa-solid fa-spinner fa-spin"></i> Rezervasiya...
+              <i className="fa-solid fa-spinner fa-spin"></i> Yadda saxlanır...
             </>
           ) : (
             <>
-              <i className="fa-regular fa-calendar"></i> Rezervasiya
+              <i className="fa-regular fa-calendar"></i> Yadda saxla
             </>
           )}
         </button>
       </div>
 
-      {reserved ? <div className="reserved-badge">Bron edildi</div> : null}
+      {reserved ? <div className="reserved-badge">Yadda saxlanıb</div> : null}
     </article>
   );
 }

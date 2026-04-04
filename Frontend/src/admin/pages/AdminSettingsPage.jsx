@@ -12,8 +12,7 @@ const initialForm = {
     platformName: "",
     supportEmail: "",
     supportPhone: "",
-    timezone: "UTC",
-    maintenanceMode: false
+    timezone: "UTC"
   },
   notifications: {
     emailEnabled: false,
@@ -205,23 +204,6 @@ export default function AdminSettingsPage() {
                     onChange={(e) => updateSection(setForm, "general", "timezone", e.target.value)}
                   />
                 </label>
-
-                <div className="admin-form__field admin-form__field--full">
-                  <div className="admin-settings-highlight">
-                    <div>
-                      <strong>Texniki xidmət rejimi</strong>
-                      <span>Saytı müvəqqəti bağla</span>
-                    </div>
-                    <span className={`admin-switch${form.general.maintenanceMode ? " admin-switch--active" : ""}`}>
-                      <input
-                        type="checkbox"
-                        checked={form.general.maintenanceMode}
-                        onChange={(e) => updateSection(setForm, "general", "maintenanceMode", e.target.checked)}
-                      />
-                      <span />
-                    </span>
-                  </div>
-                </div>
               </div>
             </SettingCard>
 
