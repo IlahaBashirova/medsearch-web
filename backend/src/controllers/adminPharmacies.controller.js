@@ -10,6 +10,11 @@ exports.create = async (req, res) => {
   res.status(201).json(result);
 };
 
+exports.getById = async (req, res) => {
+  const result = await adminPharmaciesService.getById(req.params.pharmacyId);
+  res.status(200).json(result);
+};
+
 exports.update = async (req, res) => {
   const result = await adminPharmaciesService.update(req.params.pharmacyId, req.body);
   res.status(200).json(result);

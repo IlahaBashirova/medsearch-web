@@ -29,6 +29,16 @@ exports.list = async ({ status, search, page, limit }) => {
 
 exports.create = async (payload) => Pharmacy.create(payload);
 
+exports.getById = async (pharmacyId) => {
+  const pharmacy = await Pharmacy.findById(pharmacyId).populate("ownerId", "name email phone status");
+
+  if (!pharmacy) {
+    throw new AppError("Pharmacy not found", 404);
+  }
+
+  return pharmacy;
+};
+
 exports.update = async (pharmacyId, payload) => {
   const pharmacy = await Pharmacy.findById(pharmacyId);
 

@@ -682,6 +682,13 @@ a {
   justify-content: center;
   gap: 10px;
   font-size: 16px;
+  text-decoration: none;
+}
+
+.detail-actions__btn:hover,
+.detail-actions__btn:focus,
+.detail-actions__btn:active {
+  text-decoration: none;
 }
 
 .btn--purple {

@@ -4,10 +4,10 @@ const { getPagination, formatPaginatedResult } = require("../utils/pagination");
 const { escapeRegex } = require("../utils/query");
 
 exports.list = async ({ role, status, search, page, limit }) => {
-  const query = {};
+  const query = { role: { $ne: "ADMIN" } };
   const pagination = getPagination({ page, limit });
 
-  if (role) {
+  if (role && role !== "ADMIN") {
     query.role = role;
   }
 
@@ -49,6 +49,10 @@ exports.update = async (userId, payload) => {
 
   if (!user) {
     throw new AppError("User not found", 404);
+  }
+
+  if (user.role === "ADMIN") {
+    throw new AppError("Admin accounts cannot be managed from this page", 403);
   }
 
   if (payload.name !== undefined) user.name = payload.name;

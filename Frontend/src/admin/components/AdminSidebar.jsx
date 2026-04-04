@@ -6,7 +6,7 @@ const navItems = [
   { label: "Dashboard", icon: "fa-solid fa-table-columns", to: "/admin/dashboard", implemented: true },
   { label: "İstifadəçilər", icon: "fa-regular fa-user", to: "/admin/users", implemented: true },
   { label: "Apteklər", icon: "fa-regular fa-hospital", to: "/admin/pharmacies", implemented: true },
-  { label: "Rezervasiyalar", icon: "fa-regular fa-calendar", to: "/admin/reservations", implemented: true },
+  { label: "Yadda saxlanan dərmanlar", icon: "fa-regular fa-calendar", to: "/admin/reservations", implemented: true },
   { label: "Dərmanlar", icon: "fa-solid fa-capsules", to: "/admin/medicines", implemented: true },
   { label: "Xatırlatmalar", icon: "fa-regular fa-bell", to: "/admin/reminders", implemented: true },
   { label: "Dəstək / Chat", icon: "fa-regular fa-message", to: "/admin/support", implemented: true },
